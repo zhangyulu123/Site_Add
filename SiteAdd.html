@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv = "X-UA-Compatible" content = "IE = edge" charset = "UTF-8"/> 
+		<title>SiteAdd</title>
+		<!-- <link rel = "stylesheet" href = "../src/main/webapp/pages/css/wanma.css"/> -->
+		<link rel = "stylesheet" href = "../src/main/webapp/tools/easyui/themes/default/easyui.css"/>
+		<!-- <link rel = "stylesheet" href = "../src/main/webapp/tools/easyui/themes/icon.css"/> -->
+		
+		<script type = "text/javascript" src = "../src/main/webapp/tools/tssJS/tssJS.all.js"></script>
+		
+		<script type = "text/javascript" src = "../src/main/webapp/tools/easyui/jquery.min.js"></script>
+		<script type = "text/javascript" src = "../src/main/webapp/tools/easyui/jquery.easyui.min.js"></script>
+		<script type = "text/javascript" src = "../src/main/webapp/tools/easyui/easyui-lang-zh_CN.js"></script>
+		
+		<script type = "text/javascript" src = "../src/main/webapp/tools/echarts/echarts-3.1.5.js"></script>
+		<!-- <script type = "text/javascript" src = "../src/main/webapp/more/bi_template/echart.js"></script> -->
+		<!-- <script type = "text/javascript" src = "../src/main/webapp/more/bi_template/common.js"></script> -->
+		<!-- <script type = "text/javascript" src = "../src/main/webapp/pages/js/common.js"></script> -->
+		<script type = "text/javascript">
+			var data1; 
+			var DATA_URL = "http://10.9.45.64:8080//tss/data/json/2212"
+			var method = "post"; params = {"param1":"2016-5-13", "param2":"-1"}
+			
+			$(function(){
+				tssJS.ajax({
+				url: DATA_URL,
+				params: {},
+				method: method,
+				waiting: true,
+				ondata: function(){
+					data =  this.getResponseJSON();
+					
+					}
+				});
+			});
+		/*	
+			function showtree(data){
+				
+			}
+			
+			//分公司、分拨id构造，用于层级关系
+			function to_id(data){
+				var orglist = [], centerlist = [];
+				var orgid = {}, centerid = {};
+				var s = 1, t = 1;
+				$.each(data, function(i, item){
+					var org = item.org, center = item.center;
+					if(!orglist.contains(org)){
+						orglist.push(org);
+						orgid[org] = s;
+						s++;
+					};
+					if(!centerlist,contains(center)){
+						centerlist.push(center);
+						centerid[center] = t;
+						t++;
+					};
+				});
+				return orgid, centerid;
+			}
+			
+			//当前网点数量统计
+			function to_current(data){
+				
+			}
+			
+			
+			
+			//随月份增加动态增加列数
+			function innerhtml(month){
+				var  str = "<thead><tr><th colspan = '3'>"+month+"</th></tr><tr><th>网点</th><th>承包区</th><th>门店</th></tr></thead>";
+				return str;
+			}
+			
+		*/
+		</script>
+	<head>
+	<body>
+		<div id = "wrapper">
+			<div id = "tab" class = "easyui-tabs" style = "width:900; height:600">
+				<div id = "main" title = "门店新增完成率">
+					<div class = "easyui-layout">
+						<div id = "graph" data-options = "region: center">
+							<div id = 'toggle'>
+								<select>
+									<option value = '1'>数量统计</option>
+									<option value = '2'>完成率统计</option>
+								</select>
+							</div>
+							<div id = "canvas"></div>
+						</div>
+						<div id = "tree" data-options = "region: south">
+							<table id = "rate" data-options = "fit: true">
+							<!--	<thead>
+									<tr>
+										<th>名称</th>
+									</tr>
+								</thead>
+								<thead>
+									<tr>
+										<th colspan = "3">5月</th>
+									</tr>
+									<tr>
+										<th>网点</th>
+										<th>承包区</th>
+										<th>门店</th>
+									</tr>
+								</thead>
+							-->
+							</table>
+						</div>
+					</div>
+				</div>
+				<div id = "grid" title = "门店新增数量明细">
+					<table id = "detail">
+						<thead>
+							<tr>
+								<th>名称</th>
+							</tr>
+						</thead>
+						<thead>
+							<tr></tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
