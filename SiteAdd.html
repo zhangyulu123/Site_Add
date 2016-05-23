@@ -51,7 +51,7 @@
 					if(!orglist.contains(org)){
 						orglist.push(org);
 						orgid[org] = s;
-						rows.push({"id": s, "name": org});
+						//rows.push({"id": s, "name": org});
 						s++;
 					};
 					/*
@@ -71,45 +71,71 @@
 				$.each(data, function(i, item){
 					var org = item.org_name, center = item.center;
 					var len = (orglist.length).toString().length;
-					var max = 0, pid = orgid[org];
+					var max = 0, id = 0, pid = orgid[org];
+					//var currentid = Object.getOwnPropertyNames(center_to_org[org]).length;
+					if(center_to_org[org] == "undefined"){
+						id = Math.pow(10, len)*pid+1;
+						center_to_org[org] = {};
+						center_to_org[org][center] = id;
+						//eval("center_to_org['" + org + "']" + "." + center + "=" + id);
+					}else{
+						if(center_to_org[org][center] == "undefined"){
+							id = Object.getOwnPropertyNames(center_to_org[org]).length + 1;
+							center_to_org[org][center] = id;
+						//eval("center_to_org['" + org + "']" + "." + center + "=" + id);
+						};
+				}
+				});
+				
+				/*
 					if(orglist.length == rows.length){
-						rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": center});
-						centerid[center] = Math.pow(10, len)*pid+1;
-						center_to_org[org] = centerid;
+						//rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": center});
+						id = Math.pow(10, len)*pid+1;
+						center_to_org[org] = {};
+						eval("center_to_org['" + org + "']" + "." + center + "=" + id);
 					}else{
 						for(var i = 0; i < rows.length; i++){
-						if(rows[i]["_parentId"] == pid){
-							if(parseInt(rows[i]["id"]) >= max){
-								max = parseInt(rows[i]["id"]);
+							if(rows[i]["name"] == center){
+								break;
+							}else{
+								if(rows[i]["_parentId"] == pid){
+									if(parseInt(rows[i]["id"]) >= max){
+									max = parseInt(rows[i]["id"]);
+									}
+								}
 							}
-						}
 						};
-						if(max == 0){
-						rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": center});
-						centerid[org] = {center: Math.pow(10, len)*pid+1};
-						//center_to_org[org] = centerid;
-						}else{
-							rows.push({"id":max+1, "_parentId": pid, "name": center});
-							centerid[center] = max+1;
-							center_to_org[org] = centerid;
-							max = 0;
+						if(i == rows.length){
+							if(max == 0){
+							rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": center});
+							center_to_org[org] = {};
+							id = Math.pow(10, len)*pid+1;
+							eval("center_to_org['" + org + "']" + "." + center + "=" + id);
+							}else{
+								rows.push({"id":max+1, "_parentId": pid, "name": center});
+								max = max + 1;
+								eval("center_to_org['" + org + "']" + "." + center + "=" + max);
+								max = 0;
+							};
 						};
-					};
+						
+					};*/
 					
 				});
 				
-				
+				/*
 				$.each(data, function(i, item){
-					var org = item.org_name, center = item.center;
-					var max = 0, pid = center_to_org[org][center];
-					var len = Object.getOwnPropertyNames(center_to_org[org]).length;
-					rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": "sites"});
-					rows.push({"id":Math.pow(10, len)*pid+2, "_parentId": pid, "name": "cbq"});
-					rows.push({"id":Math.pow(10, len)*pid+3, "_parentId": pid, "name": "stores"});
-				})
+					var month = item.imonth, org = item.org_name, center = item.center;
+					var pid = center_to_org[org][center];
+					var len = Object.getOwnPropertyNames(center_to_org[org]).length.toString().length;
+					var obj1 = {}, obj2 = {}, obj3 = {}
+					rows.push({"id":Math.pow(10, len)*pid+1, "_parentId": pid, "name": "网点"});
+					rows.push({"id":Math.pow(10, len)*pid+2, "_parentId": pid, "name": "承包区"});
+					rows.push({"id":Math.pow(10, len)*pid+3, "_parentId": pid, "name": "门店"});
+				});
+				*/
 				
-				
-			/*	
+					
 				//基础数据按层级关系处理成json格式
 				var monthobj = {}, orgobj = {}, centerobj = {};
 				$.each(data, function(i, item){
@@ -126,14 +152,14 @@
 				   orgobj[org] = centerobj;
 				   monthobj[month] = orgobj;
 				});
-			*/	
+		
 				//动态添加列
 				var clist = [], alist = [];
 				for(var key in monthid){
 					var month = key, id = monthid[key];
 					var amount = "amount" + id, add = "add" + id, rate = "rate" + id;
-					var cHtml = "<tr><th colspan = '3'>"+month+"</th></tr><tr><th field = " + amount +">月前数量</th><th field = "+ add +">本月新增</th><th field = "+ rate +">完成比</th></tr>";
-					var aHtml = "<tr><th field = " + add + ">" + month + "</th></tr>";
+					var cHtml = "<tr><th colspan = '3'>"+month+"</th></tr><tr><th field = '" + amount +"'>月前数量</th><th field = '"+ add +"'>本月新增</th><th field = '"+ rate +"'>完成比</th></tr>";
+					var aHtml = "<tr><th field = '" + add + "'>" + month + "</th></tr>";
 					clist.push(cHtml);//完成率树列
 					alist.push(aHtml);//新增树列
 				}
@@ -151,6 +177,15 @@
 				
 				$("#cCol").innerHTML = clist.join("\n");
 				$("#aCol").innerHTML = alist.join("\n");
+				
+				//在rows中添加数据
+				for(var key1 in center_to_org){
+					var len = Object.getOwnPropertyNames(center_to_org[key1]).length.toString().length;
+					for(var key2 in center_to_org[key1]){
+						var pid = center_to_org[key1][key2];
+						
+					}
+				}
 				
 			};
 			
