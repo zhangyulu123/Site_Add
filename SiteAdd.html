@@ -79,17 +79,6 @@
 					}
 					
 				});
-				
-				//完成率计算
-				function rate(add, target){
-					if(add == undefined || target == undefined || add == 0){
-						return "";
-					}else{
-						return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
-					}
-					
-				};	
-		
 		
 
 					var len = (orglist.length).toString().length;
@@ -224,7 +213,7 @@
 				};
 				
 				for(var key1 in center_to_org){
-					var len = Object.getOwnPropertyNames(center_to_org[key1]).length.toString().length;
+					var len = Object.keys(center_to_org[key1]).length.toString().length;
 					cen[key1] = {};
 					for(var key2 in center_to_org[key1]){
 						rec.id = orgid[key1]*Math.pow(10, len)+center_to_org[key1][key2];
@@ -297,7 +286,7 @@
 					}	
 
 				for(var key1 in center_to_org){
-					var len = Object.getOwnPropertyNames(center_to_org[key1]).length.toString().length;
+					var len = Object.keys(center_to_org[key1]).length.toString().length;
 					for(var key2 in center_to_org[key1]){
 						var pid = center_to_org[key1][key2];
 						
@@ -305,45 +294,206 @@
 				}
 				
 			};
-			
-			
-			
-			//当前数量展示图
-			
-			//完成率计算
-			function rate(add, target){
-				if(add == undefined || target == undefined || add == 0){
-					return "";
-				}else{
-					return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
+		
 
-				}
-				footer.push(all);
-				footer.name = "全网";
-				json.rows = rows;
-				json.footer = footer;
-				
-				$("#tree").treegrid({
-					width: 900,
-					height: 500,
-					treeField: "name",
-					idField: "id",
-					showFooter: true,
-					data: json
-				})
+			footer.push(all);
+			footer.name = "全网";
+			json.rows = rows;
+			json.footer = footer;
+			
+			$("#tree").treegrid({
+				width: 900,
+				height: 500,
+				treeField: "name",
+				idField: "id",
+				showFooter: true,
+				data: json
+			})
 				
 			};
 			
+		//完成率计算
+		function rate(add, target){
+			if(add == undefined || target == undefined || add == 0){
+				return "";
+			}else{
+				return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
+
+			}
+			
 		//数量统计	
 		function showCanvas1(data){
-			var site = {}, cnq = {}, store = {};
+			var dataObj = {};
 			$.each(data, function(i, item){
-				if(!site.hasOwnProperty(item.imonth)){
-					site[item.imonth] = 0;
+				var month = item.imonth;
+				if(!dataObj.hasOwnProperty(month)){
+					dataObj[month] = {};
+					dataObj[month]["site"] = 0;
+					dataObj[month]["cbq"] = 0;
+					dataObj[month]["store"] = 0;
 				}else{
-					site[item.imonth] += item.sites
+					dataObj[month]["site"] += item.sites;
+					dataObj[month]["cbq"] += item.cbq;
+					dataObj[month]["store"] += item.stores
 				}
 			});
+			var axis = [], data_s = [], data_c = [], data_a = [];
+			for(var m in dataObj){
+				data_s.push(dataObj[m]["site"]);
+				data_c.push(dataObj[m]["cbq"]);
+				data_a.push(dataObj[m]["store"]);
+				axis.push(m);
+			};
+			series.push({name: "门店", type: "line", data:data_s});
+			series.push({name: "网点", type: "line",  data:data_s});
+			series.push({name: "承包区", type: "line", data: data_c});
+			
+			
+			var myChart = echarts.init(document.getElementById("canvas"));
+			var option = {
+				xAxis: {
+					type: "category",
+					data: axis
+				}],
+				yAxis: [{
+					type: "value"
+				}],
+				tooltip: {
+					trigger: "axis"
+				},
+				series: series
+			}
+			
+			myChart.setOption(option);
+			myChart.on("click", function(params){
+				var month = params.name;
+				var data_a = {};
+				var data_s = [], data_c = [], axis = []; 
+				$.each(data, function(i, item)){
+					if(item.imonth == month){
+						if(!data.hasOwnProperty[item.org_name]){
+							data_a[item.org_name]= {};
+							data_a[item.org_name]["site"] = 0;
+							data_a[item.org_name]["cbq"] = 0;
+						}else{
+							data_a[item.org_name]["site"] += item.sites;
+							data_a[item.org_name]["cbq"] += item.stores;
+						}
+					}
+				}
+				for(var n in data_a){
+					data_s.push(data_a[n]["site"]);
+					data_c.push(data_a[n]["cbq"]);
+					axis.push(n)
+				};
+				
+				myCharts.setOption({
+					xAxis: {
+						data: axis
+					},
+					serirs: [{
+						name: "网点",
+						type: "bar",
+						stack: "门店",
+						data: data_s
+					},{
+						name: "承包区",
+						type: "bar",
+						stack："门店",
+						data: data_c
+					}]
+				});
+				
+				myChart.on("click", function(params){
+					var org = params.name;
+					var data_s = [], data_c = [], centerlist = []
+					$.each(data, function(i, item)){
+						if(month == item.imonth && org == item.org_name){
+							data_s.push(item.sites);
+							data_c.push(item.cbq);
+							centerlist.push(item.center);
+						}
+					};
+					myChart.setOption({
+						xAxis: {
+							data: centerlist;
+						},
+						series:[{
+							name: "网点",
+							type："bar",
+							stack："门店",
+							data: data_s
+						},{
+							name: "承包区",
+							type: "bar",
+							stack："门店",
+							data: data_c
+						}]
+					});
+				});
+			});
+			
+		};
+		
+		funtion showCanvas2(data){
+			var dataObj = {};
+			$.each(data, function(i, item){
+				var month = item.imonth;
+				if(!dataObj.hasOwnProperty(month)){
+					dataObj[month] = {};
+					dataObj[month]["site_a"] = 0;
+					dataObj[month]["cbq_a"] = 0;
+					dataObj[month]["store_a"] = 0;
+					dataObj[month]["site_t"] = 0;
+					dataObj[month]["cbq_t"] = 0;
+					dataObj[month]["store_t"] = 0;
+				}else{
+					dataObj[month]["site_a"] += item.sites_a;
+					dataObj[month]["cbq_a"] += item.cbq_a;
+					dataObj[month]["store_a"] += item.stores_a;
+					dataObj[month]["site_t"] = item.sites_t;
+					dataObj[month]["cbq_t"] = item.cbq_t;
+					dataObj[month]["store_t"] = item.stores_t;
+				}
+			});
+			var data_s = [], data_c = [], data_a = [], axis = [];
+			for(var n in dataObj){
+				data_s.push(rate(dataObj[n]["site_a"], dataObj[n]["site_t"]));
+				data_c.push(rate(dataObj[n]["cbq_a"], dataObj[n]["cbq_t"]));
+				data_a.push(rate(dataObj[n]["store_a"], dataObj[n]["store_t"]));
+				axis.push(n)
+			};
+			
+			var myChart = echarts.init(document.getElementById("canvas"));
+			var option = {
+				xAxis: {
+					type: "category",
+					data: axis
+				}],
+				yAxis: [{
+					type: "value"
+				}],
+				tooltip: {
+					trigger: "axis"
+				},
+				series: [{
+					name: "门店",
+					type: "line",
+					data: data_a
+				},{
+					name: "网点",
+					type: "line",
+					data: data_s
+				},{
+					name: "承包区",
+					type: "line",
+					data: data_c
+				}]
+			};
+			myChart.setOption(option);
+			myChart.on("click", function(params){
+				
+			})
 		}
 		
 			
