@@ -33,7 +33,8 @@
 					waiting: true,
 					ondata: function(){
 						data =  this.getResponseJSON();
-						showtree(data);
+						//showtree(data);
+						showCanvas1(data)
 					}
 				});
 			});
@@ -44,22 +45,20 @@
 				var orglist = [], centerlist = [], monthlist = [];
 				var orgid = {}, centerid = {}, monthid = {}, center_to_org = {}; 
 				var s = 1, t = 1;
-				var rows = [];
+				var json = {}, rows = [], footer = [];
 				
 				$.each(data, function(i, item){
 					var org = item.org_name,  month = item.imonth;
 					if(!orglist.contains(org)){
 						orglist.push(org);
 						orgid[org] = s;
+						center_to_org[org] = {};
+
 						//rows.push({"id": s, "name": org});
+
 						s++;
 					};
-					/*
-					if(!centerlist.contains(center)){
-						centerlist.push(center);
-						centerid[center] = t;
-						t++;
-					};*/
+					
 					//对日期定义id主要用于定义不同月份field名字
 					if(!monthlist.contains(month)){  //需要确定一下展示时间轴的问题
 						monthlist.push(month);
@@ -70,6 +69,29 @@
 				
 				$.each(data, function(i, item){
 					var org = item.org_name, center = item.center;
+
+					var max = 0, id = 0;
+					
+					if(!center_to_org[org][center]){
+						id = Object.getOwnPropertyNames(center_to_org[org]).length + 1;
+						center_to_org[org][center] = id;
+						//eval("center_to_org['" + org + "']" + "." + center + "=" + id);
+					}
+					
+				});
+				
+				//完成率计算
+				function rate(add, target){
+					if(add == undefined || target == undefined || add == 0){
+						return "";
+					}else{
+						return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
+					}
+					
+				};	
+		
+		
+
 					var len = (orglist.length).toString().length;
 					var max = 0, id = 0, pid = orgid[org];
 					//var currentid = Object.getOwnPropertyNames(center_to_org[org]).length;
@@ -137,31 +159,41 @@
 				
 					
 				//基础数据按层级关系处理成json格式
-				var monthobj = {}, orgobj = {}, centerobj = {};
+				var obj = {};
 				$.each(data, function(i, item){
 					var templist = [];
 					var month = item.imonth, org = item.org_name, center = item.center;
 					var sites = item.sites, sites_a = item.sites_a, sites_t = item.sites_t,
 					cbq = item.cbq, cbq_a = item.cbq_a, cbq_t = item.cbq_t, 
 					stores = item.stores, stores_a = item.stores_a, stores_t = item.stores_t;
+					if(!obj.hasOwnProperty(org)){
+						obj[org] = {};
+					};
 					
-					centerobj[center] = {"网点":{"当前数量": sites, "月前数量":sites - sites_a, "本月新增":
-					sites_a, "完成比": rate(sites_a, sites_t)}, 
-				   "承包区": {"当前数量": cbq, "月前数量": cbq - cbq_a, "本月新增": cbq_a, "完成比": rate(cbq_a, cbq_t)},
-				   "门店": {"当前数量": stores, "月前数量": stores - stores_a, "本月新增": stores_a, "完成比": rate(stores_a, stores_t)}};
-				   orgobj[org] = centerobj;
-				   monthobj[month] = orgobj;
+					if(!obj[org].hasOwnProperty(center)){
+						obj[org][center] = {};
+					};
+					obj[org][center][month] = {"site_c": sites , "cbq_c": cbq , "store_c": stores, "site_a": sites - sites_a , "cbq_a": cbq - cbq_a, "store_a": stores - stores_a, "site_t": sites_t, "cbq_t": cbq_t, "store_t": stores_t, "site_r": rate(sites_a, sites_t), "cbq_r": rate(cbq_a, cbq_t), "store_r": rate(stores_a, stores_t)};
 				});
-		
+				
+			
+
+
 				//动态添加列
 				var clist = [], alist = [];
 				for(var key in monthid){
 					var month = key, id = monthid[key];
+
+					//var site = "site" + id, cbq = "cbq" + id, store = "store" + id;
+					var cHtml = "<tr><th colspan = '9'>"+month+"</th></tr><tr><th colspan = '3'>网点</th><th colspan = '3'>承包区</th><th colspan = '3'>门店</th></tr><tr><th field = 'site_c" + id +"' width = '33'>月前数量</th><th field = 'site_a"+ id +"' width = '33'>本月新增</th><th field = 'site_r"+ id +"' width = '33'>完成率</th><th field = 'cbq_c" + id +"' width = '33'>月前数量</th><th field = 'cbq_a"+ id +"' width = '33'>本月新增</th><th field = 'cbq_r"+ id +"' width = '33'>完成率</th><th field = 'store_c" + id +"' width = '33'>月前数量</th><th field = 'store_a"+ id +"' width = '33'>本月新增</th><th field = 'store_r"+ id +"' width = '33'>完成率</th></tr>";
+					//var aHtml = "<tr><th field = '" + add + "'>" + month + "</th></tr>";
+
 					var amount = "amount" + id, add = "add" + id, rate = "rate" + id;
 					var cHtml = "<tr><th colspan = '3'>"+month+"</th></tr><tr><th field = '" + amount +"'>月前数量</th><th field = '"+ add +"'>本月新增</th><th field = '"+ rate +"'>完成比</th></tr>";
 					var aHtml = "<tr><th field = '" + add + "'>" + month + "</th></tr>";
+
 					clist.push(cHtml);//完成率树列
-					alist.push(aHtml);//新增树列
+					//alist.push(aHtml);//新增树列
 				}
 				/*
 				for(var i = 0; i < monthid; i++){
@@ -172,13 +204,98 @@
 					clist.push(cHtml);//完成率树列
 					alist.push(aHtml);//新增树列
 				};*/
-				clist.push("<tr><th colspan = '3'>累计</th></tr><tr><th field = 'amount'>月前数量</th><th field = 'add'>本月新增</th><th field = 'rate'>完成比</th></tr>");
-				alist.push("<tr><th field = 'add'>累计</th></tr>");
+				clist.push("<tr><th colspan = '9'>累计</th></tr><tr><th colspan = '3'>网点</th><th colspan = '3'>承包区</th><th colspan = '3'>门店</th></tr><tr><th field = 'site_c' width = '33'>月前数量</th><th field = 'site_a' width = '33'>本月新增</th><th field = 'site_r' width = '33'>完成率</th><th field = 'cbq_c' width = '33'>月前数量</th><th field = 'cbq_a' width = '33'>本月新增</th><th field = 'cbq_r' width = '33'>完成率</th><th field = 'store_c' width = '33'>月前数量</th><th field = 'store_a' width = '33'>本月新增</th><th field = 'store_r' width = '33'>完成率</th></tr>");
+				//alist.push("<tr><th field = 'add'>累计</th></tr>");
 				
 				$("#cCol").innerHTML = clist.join("\n");
-				$("#aCol").innerHTML = alist.join("\n");
+				//$("#aCol").innerHTML = alist.join("\n");
 				
 				//在rows中添加数据
+
+				var rec = {}, cen = {}, all = {};
+				
+				for(var n in monthid){
+					eval("all['site_a" + monthid[n] +"'] = 0");
+					eval("all['cbq_a" + monthid[n] +"'] = 0");
+					eval("all['store_a" + monthid[n] +"'] = 0");
+					eval("all['site_c" + monthid[n] +"'] = 0");
+					eval("all['cbq_c" + monthid[n] +"'] = 0");
+					eval("all['store_c" + monthid[n] +"'] = 0");
+				};
+				
+				for(var key1 in center_to_org){
+					var len = Object.getOwnPropertyNames(center_to_org[key1]).length.toString().length;
+					cen[key1] = {};
+					for(var key2 in center_to_org[key1]){
+						rec.id = orgid[key1]*Math.pow(10, len)+center_to_org[key1][key2];
+						rec.name = key2;
+						rec._parentId = orgid[key1]
+						rec.site_a = 0, rec.cbq_a = 0, rec_store_a = 0, rec.site_t = 0, rec.cbq_t = 0, rec.store_t = 0;
+						for(var month in obj[key1][key2]){
+							eval("rec.site_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_c']");
+							eval("rec.site_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_a']");
+							eval("rec.site_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_r']");
+							eval("rec.cbq_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_c']");
+							eval("rec.cbq_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_a']");
+							eval("rec.cbq_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_r']");
+							eval("rec.store_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_c']");
+							eval("rec.store_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_a']");	
+							eval("rec.store_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_r']");
+							//横向累加
+							rec.site_a += eval("obj[key1][key2]['"+month+"']['site_a']");
+							rec.cbq_a += eval("obj[key1][key2]['"+month+"']['cbq_a']");
+							rec.store_a += eval("obj[key1][key2]['"+month+"']['store_a']");
+							rec.site_t += eval("obj[key1][key2]['"+month+"']['site_t']");
+							rec.cbq_t += eval("obj[key1][key2]['"+month+"']['cbq_t']");
+							rec.store_t += eval("obj[key1][key2]['"+month+"']['store_t']");
+							//纵向累加
+							eval("cen[key1].site_c" + monthid[month] + "=0");
+							eval("cen[key1].site_c" + monthid[month] + "+= rec.site_c" + monthid[month]);
+							eval("cen[key1].site_a" + monthid[month] + "=0");
+							eval("cen[key1].site_a" + monthid[month] + "+= rec.site_a" + monthid[month]);
+							eval("cen[key1].cbq_c" + monthid[month] + "=0");
+							eval("cen[key1].cbq_c" + monthid[month] + "+= rec.cbq_c" + monthid[month]);
+							eval("cen[key1].cbq_a" + monthid[month] + "=0");
+							eval("cen[key1].cbq_a" + monthid[month] + "+= rec.cbq_a" + monthid[month]);
+							eval("cen[key1].store_c" + monthid[month] + "=0");
+							eval("cen[key1].store_c" + monthid[month] + "+= rec.store_c" + monthid[month]);
+							eval("cen[key1].store_a" + monthid[month] + "=0");
+							eval("cen[key1].store_a" + monthid[month] + "+= rec.store_a" + monthid[month]);
+						
+						};
+						rows.push(rec);
+						rec = {};
+					}
+					rec = cen[key1];
+					rec.id = orgid[key1];
+					rec.name = key1;
+					rec.site_a = 0, rec.cbq_a = 0, rec_store_a = 0, rec.site_c = 0, rec.cbq_c = 0, rec.store_c = 0;
+					//横向累加
+					for(var m in cen[key1]){
+						if(m.indexOf("site_a") != "-1"){
+							rec.site_a += cen[key1][m];
+						}else if(m.indexOf("cbq_a") != "-1"){
+							rec.cbq_a += cen[key1][m];
+						}else if(m.indexOf("store_a") != "-1"){
+							rec.store_a += cen[key1][m];
+						}else if(m.indexOf("site_c") != "-1"){
+							rec.site_c += cen[key1][m];
+						}else if(m.indexOf("cbq_c") != "-1"){
+							rec.cbq_c += cen[key1][m];
+						}else if(m.indexOf("store_c") != "-1"){
+							rec.store_c += cen[key1][m];
+						}
+							
+					}
+					
+					rows.push(rec);
+					for(var n in cen[key1]){
+						if(n != "name" && n != "id"){
+							all[n] += cen[key1][n];
+						}
+						
+					}	
+
 				for(var key1 in center_to_org){
 					var len = Object.getOwnPropertyNames(center_to_org[key1]).length.toString().length;
 					for(var key2 in center_to_org[key1]){
@@ -199,26 +316,46 @@
 					return "";
 				}else{
 					return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
+
 				}
+				footer.push(all);
+				footer.name = "全网";
+				json.rows = rows;
+				json.footer = footer;
+				
+				$("#tree").treegrid({
+					width: 900,
+					height: 500,
+					treeField: "name",
+					idField: "id",
+					showFooter: true,
+					data: json
+				})
 				
 			};
 			
+		//数量统计	
+		function showCanvas1(data){
+			var site = {}, cnq = {}, store = {};
+			$.each(data, function(i, item){
+				if(!site.hasOwnProperty(item.imonth)){
+					site[item.imonth] = 0;
+				}else{
+					site[item.imonth] += item.sites
+				}
+			});
+		}
+		
 			
-		/*	
-			//随月份增加动态增加列数
-			function innerhtml(month){
-				var  str = "<thead><tr><th colspan = '3'>"+month+"</th></tr><tr><th>网点</th><th>承包区</th><th>门店</th></tr></thead>";
-				return str;
-			}
+
 			
-		*/
 		</script>
 	<head>
 	<body>
 		<div id = "wrapper">
-			<div id = "tab" class = "easyui-tabs" style = "width:900; height:600">
+			<div id = "tab" class = "easyui-tabs">
 				<div id = "main" title = "门店新增完成情况">
-					<div class = "easyui-layout">
+					<div class = "easyui-layout" style = "width: 900px; height: 900px">
 						<div id = "graph" data-options = "region: 'center'">
 							<div id = 'toggle'>
 								<select>
@@ -235,15 +372,7 @@
 										<th field = "name">名称</th>
 									</tr>
 							</thead>
-							<thead id = "cCol">
-								<!--<tr>
-										<th colspan = "3">5月</th>
-									</tr>
-									<tr>
-										<th field = "amount">月前数量</th>
-										<th field = "add">本月新增</th>
-										<th field = "rate">完成比</th>
-									</tr> -->
+							<thead id = "cCol" style = "height: 500px">
 							</thead>
 							</table>
 						</div>
