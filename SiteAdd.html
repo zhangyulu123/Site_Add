@@ -33,8 +33,8 @@
 					waiting: true,
 					ondata: function(){
 						data =  this.getResponseJSON();
-						showtree(data);
-						//showCanvas1(data);
+						//showtree(data);
+						showCanvas1(data);
 					}
 				});
 			});
@@ -104,27 +104,6 @@
 						}
 					})
 					
-					
-				//基础数据按层级关系处理成json格式
-				var obj = {};
-				$.each(data, function(i, item){
-					var templist = [];
-					var month = item.imonth, org = item.org_name, center = item.center;
-					var sites = item.sites, sites_a = item.sites_a, sites_t = item.sites_t,
-					cbq = item.cbq, cbq_a = item.cbq_a, cbq_t = item.cbq_t, 
-					stores = item.stores, stores_a = item.stores_a, stores_t = item.stores_t;
-					if(!obj.hasOwnProperty(org)){
-						obj[org] = {};
-					};
-					
-					if(!obj[org].hasOwnProperty(center)){
-						obj[org][center] = {};
-					};
-					obj[org][center][month] = {"site_c": sites - sites_a, "cbq_c": cbq - cbq_a, "store_c": stores - stores_a, "site_a": sites_a , "cbq_a": cbq_a, "store_a": stores_a, "site_t": sites_t, "cbq_t": cbq_t, "store_t": stores_t, "site_r": rate_cal(sites_a, sites_t), "cbq_r": rate_cal(cbq_a, cbq_t), "store_r": rate_cal(stores_a, stores_t)};
-				});
-				
-			
-
 
 				//动态添加列
 				var row1 = ["<th field = 'name' rowspan = '3' width = '100px'>名称</th>"], row2 = [], row3 = [];
@@ -135,9 +114,9 @@
 					row3.push("<th field = 'site_c'"+id+">月前数量</th><th field = 'site_a' "+id+">本月新增</th><th field = 'site_r'"+id+" >完成率</th><th field = 'cbq_c' "+id+">月前数量</th><th field = 'cbq_a' "+id+">本月新增</th><th field = 'cbq_r'"+id+">完成率</th><th field = 'store_c'"+id+" >月前数量</th><th field = 'store_a' "+id+">本月新增</th><th field = 'store_r' "+id+">完成率</th>");
 
 				};
-				row1.push("<th colspan = '9' align = 'center'>累计</th>");
-				row2.push("<th colspan = '3' align = 'center'>网点</th><th colspan = '3' align = 'center'>承包区</th><th colspan = '3' align = 'center'>门店</th>");
-				row3.push("<th field = 'site_c'>月前数量</th><th field = 'site_a'>本月新增</th><th field = 'site_r'>完成率</th><th field = 'cbq_c' >月前数量</th><th field = 'cbq_a' >本月新增</th><th field = 'cbq_r'>完成率</th><th field = 'store_c' >月前数量</th><th field = 'store_a'>本月新增</th><th field = 'store_r'>完成率</th>");
+				row1.push("<th colspan = '6' align = 'center'>累计</th>");
+				row2.push("<th colspan = '2' align = 'center'>网点</th><th colspan = '2' align = 'center'>承包区</th><th colspan = '2' align = 'center'>门店</th>");
+				row3.push("<th field = 'site_a'>本月新增</th><th field = 'site_r'>完成率</th><th field = 'cbq_a' >本月新增</th><th field = 'cbq_r'>完成率</th><th field = 'store_a'>本月新增</th><th field = 'store_r'>完成率</th>");
 				
 				$$("row1").innerHTML = row1.join("\n");
 				$$("row2").innerHTML = row2.join("\n");
@@ -146,145 +125,102 @@
 				
 				//在rows中添加数据
 				var rec = {}, rec1 = {}, cen = {}, all = {};
+				var type = ["site", "cbq", "store"]
 				
-				all["site_a"] = 0;
-				all["site_t"] = 0;
-				all["cbq_a"] = 0;
-				all["cbq_t"] = 0;
-				all["store_a"] = 0;
-				all["store_t"] = 0;
-				
-				for(var n in monthid){
-					eval("all['site_a" + monthid[n] +"'] = 0");
-					eval("all['cbq_a" + monthid[n] +"'] = 0");
-					eval("all['store_a" + monthid[n] +"'] = 0");
-					eval("all['site_t" + monthid[n] +"'] = 0");
-					eval("all['cbq_t" + monthid[n] +"'] = 0");
-					eval("all['store_t" + monthid[n] +"'] = 0");
-					eval("all['site_c" + monthid[n] +"'] = 0");
-					eval("all['cbq_c" + monthid[n] +"'] = 0");
-					eval("all['store_c" + monthid[n] +"'] = 0");
+				for(var t = 0; t < type.length; t++){
+					eval("all['"+type[t]+"_a'] = 0");
+					eval("all['"+type[t]+"_t'] = 0");
+					eval("all['"+type[t]+"_c'] = 0");
 				};
 				
-				for(var key1 in center_to_org){
-					var len = Object.keys(center_to_org[key1]).length.toString().length;
-					cen[key1] = {};
-					for(var n in monthid){
-							eval("cen[key1].site_c" + monthid[n] + "=0");
-							eval("cen[key1].site_a" + monthid[n] + "=0");
-							eval("cen[key1].site_t" + monthid[n] + "= 0");
-							eval("cen[key1].cbq_c" + monthid[n] + "=0");
-							eval("cen[key1].cbq_a" + monthid[n] + "=0");
-							eval("cen[key1].cbq_t" + monthid[n] + "= 0");
-							eval("cen[key1].store_c" + monthid[n] + "=0");
-							eval("cen[key1].store_a" + monthid[n] + "=0");
-							eval("cen[key1].store_t" + monthid[n] + "= 0");
-					};
-				
-				
-					for(var key2 in center_to_org[key1]){
-						rec.id = orgid[key1]*Math.pow(10, len)+center_to_org[key1][key2];
-						rec.name = key2;
-						rec._parentId = orgid[key1];
-						rec.site_a = 0, rec.cbq_a = 0, rec.store_a = 0, rec.site_t = 0, rec.cbq_t = 0, rec.store_t = 0;
-						for(var month in obj[key1][key2]){
-							eval("rec.site_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_c']");
-							eval("rec.site_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_a']");
-							eval("rec.site_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['site_r']");
-							eval("rec.cbq_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_c']");
-							eval("rec.cbq_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_a']");
-							eval("rec.cbq_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['cbq_r']");
-							eval("rec.store_c" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_c']");
-							eval("rec.store_a" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_a']");	
-							eval("rec.store_r" + monthid[month] + "= obj[key1][key2]['"+month+"']['store_r']");
-							//横向累加
-							rec.site_a += eval("obj[key1][key2]['"+month+"']['site_a']");
-							rec.cbq_a += eval("obj[key1][key2]['"+month+"']['cbq_a']");
-							rec.store_a += eval("obj[key1][key2]['"+month+"']['store_a']");
-							rec.site_t += eval("obj[key1][key2]['"+month+"']['site_t']");
-							rec.cbq_t += eval("obj[key1][key2]['"+month+"']['cbq_t']");
-							rec.store_t += eval("obj[key1][key2]['"+month+"']['store_t']");
-							//纵向累加
-							
-							eval("cen[key1].site_c" + monthid[month] + "+= rec.site_c" + monthid[month]);
-							eval("cen[key1].site_a" + monthid[month] + "+= rec.site_a" + monthid[month]);
-							eval("cen[key1].site_t" + monthid[month] + "+= obj[key1][key2]['"+month+"']['site_t']");
-							eval("cen[key1].cbq_c" + monthid[month] + "+= rec.cbq_c" + monthid[month]);
-							eval("cen[key1].cbq_a" + monthid[month] + "+= rec.cbq_a" + monthid[month]);
-							eval("cen[key1].cbq_t" + monthid[month] + "+= obj[key1][key2]['"+month+"']['cbq_t']");
-							eval("cen[key1].store_c" + monthid[month] + "+= rec.store_c" + monthid[month]);
-							eval("cen[key1].store_a" + monthid[month] + "+= rec.store_a" + monthid[month]);
-							eval("cen[key1].store_t" + monthid[month] + "+= obj[key1][key2]['"+month+"']['store_t']");
-							
-						};
-						rec.site_r = rate_cal(rec.site_a, rec.site_t);
-						rec.cbq_r = rate_cal(rec.cbq_a, rec.cbq_t);
-						rec.store_r = rate_cal(rec.store_a, rec.store_t);
-						
-						//分公司累计完成率计算
-						for(var str in cen[key1]){
-							index = str.indexOf("_t");
-							if(index != "-1"){
-								var t = str.substring(0, index)+"_r"+str.substr(index+2);
-								var a = str.substring(0, index)+"_a"+str.substr(index+2);
-								eval("cen[key1]." + t + " = rate_cal(cen[key1]."+a+", cen[key1]."+str+")")
-							};
-						};
-						rows.push(rec);
-						rec = {};
+				for(var n in monthid){
+					for(var t = 0; t < type.length; t++){
+						eval("all['"+type[t]+"_a" + monthid[n] +"'] = 0");
+						eval("all['"+type[t]+"_t" + monthid[n] +"'] = 0");
+						eval("all['"+type[t]+"_c" + monthid[n] +"'] = 0");
 					}
 				};
 				
-				for(var key1 in cen){
-					rec1 = cen[key1];
-					rec1.site_a = 0, rec1.cbq_a = 0, rec1.store_a = 0, rec1.site_t = 0, rec1.cbq_t = 0, rec1.store_t = 0;
-					
-					//横向累加
-					for(var m in rec1){
-						if(m.indexOf("site_a") != "-1"){
-						rec1.site_a += cen[key1][m];
-						}else if(m.indexOf("cbq_a") != "-1"){
-							rec1.cbq_a += cen[key1][m];
-						}else if(m.indexOf("store_a") != "-1"){
-							rec1.store_a += cen[key1][m];
-						}else if(m.indexOf("site_t") != "-1"){
-							rec1.site_t += cen[key1][m]
-						}else if(m.indexOf("cbq_t") != "-1"){
-							rec1.cbq_t += cen[key1][m]
-						}else if(m.indexOf("store_t") != "-1"){
-							rec1.store_t += cen[key1][m]
-						}		
-					};
-					
-					for(var n in rec1){
-						if(n != "site_c" && n != "cbq_c" && n != "store_c" && n.indexOf("_r") == "-1"){
-							all[n] += rec1[n];
-						}	
-					};
-					
-					rec1.id = orgid[key1];
-					rec1.name = key1;
-					
-					rec1.site_r = rate_cal(rec1.site_a, rec1.site_t);
-					rec1.cbq_r = rate_cal(rec1.cbq_a, rec1.cbq_t);
-					rec1.store_r = rate_cal(rec1.store_a, rec1.store_t);
-					rows.push(rec1);
-				}
-							
-			
-			for(var str in all){
-				index = str.indexOf("_t");
-				if(index != "-1"){
-					var t = str.substring(0, index)+"_r"+str.substr(index+2);
-					var a = str.substring(0, index)+"_a"+str.substr(index+2);
-					eval("all." + t + " = rate_cal(all."+a+", all."+str+")");
+				for(var key1 in center_to_org){
+					cen[key1] = {};
+					for(var n in monthid){
+						for(var t = 0; t < type.length; t++){
+							eval("cen[key1]['"+type[t]+"_a" + monthid[n] +"'] = 0");
+							eval("cen[key1]['"+type[t]+"_t" + monthid[n] +"'] = 0");
+							eval("cen[key1]['"+type[t]+"_c" + monthid[n] +"'] = 0");
+						}
+					}
 				};
+				
+				$.each(data, function(i, item){
+					var org = item.org_name, center = item.center, month = item.imonth;
+					var len = Object.keys(center_to_org[org]).length.toString().length;
+					
+					if(!rec.hasOwnProperty(center)){
+						rec[center] = {};
+						rec[center].id = orgid[org]*Math.pow(10, len)+center_to_org[org][center];
+						rec[center].name = center;
+						rec[center]._parentId = orgid[org];
+						for(var t = 0; t < type.length; t++){
+							eval("rec[center]."+type[t]+"_a = 0");
+							eval("rec[center]."+type[t]+"_t = 0");
+						};
+					}
+					
+					for(var t = 0; t < type.length; t++){
+						eval("rec[center]."+type[t]+"_c"+monthid[month]+"=item."+type[t]+" - item."+type[t]+"_a");
+						eval("rec[center]."+type[t]+"_a"+monthid[month]+"=item."+type[t]+"_a");
+						eval("rec[center]."+type[t]+"_r"+monthid[month]+"=rate_cal(item."+type[t]+"_a, item."+type[t]+"_t)");
+						//分拨横向累计
+						eval("rec[center]."+type[t]+"_a += item."+type[t]+"_a");
+						eval("rec[center]."+type[t]+"_t += item."+type[t]+"_t");
+						//分拨纵向累加
+						eval("cen[org]."+type[t]+"_c"+monthid[month]+"+=item."+type[t]+" - item."+type[t]+"_a");
+						eval("cen[org]."+type[t]+"_a"+monthid[month]+"+=item."+type[t]+"_a");
+						eval("cen[org]."+type[t]+"_t"+monthid[month]+"+=item."+type[t]+"_t")
+					}
+				});
+				//分拨横向完成比计算
+				for(var i in rec){
+					for(var t = 0; t < type.length; t++){
+					eval("rec[i]."+type[t]+"_r = rate_cal(rec[i]."+type[t]+"_a, rec[i]."+type[t]+"_t)");
+					}
+					rows.push(rec[i]);
+				}
+				
+				for(var i in cen){
+					cen[i].id = orgid[i];
+					cen[i].name = i;
+					//分公司纵向累加
+					for(var j in monthid){
+						var mon = monthid[j];
+						for(var t = 0; t < type.length; t++){
+							eval("all."+type[t]+"_c"+mon+"+=cen[i]."+type[t]+"_c"+mon);
+							eval("all."+type[t]+"_a"+mon+"+=cen[i]."+type[t]+"_a"+mon);
+							eval("all."+type[t]+"_t"+mon+"+=cen[i]."+type[t]+"_t"+mon);
+						}
+					}
+					cen[i].site_r = rate_cal(cen[i].site_a, cen[i].site_t);
+					cen[i].cbq_r = rate_cal(cen[i].cbq_a, cen[i].cbq_t);
+					cen[i].store_r = rate_cal(cen[i].store_a, cen[i].store_t);
+					rows.push(cen[i]);
+				}
+			
+			for(var t = 0; t < type.length; t++){
+				for(var j in monthid){
+					var mon = monthid[j];
+					//分公司横向完成比计算
+					eval("all."+type[t]+"_r"+mon+"=rate_cal(all."+type[t]+"_a"+mon+", all."+type[t]+"_t"+mon+")");
+					eval("all."+type[t]+"_a+=all."+type[t]+"_a"+mon);
+					eval("all."+type[t]+"_t+=all."+type[t]+"_t"+mon);
+				}
+				eval("all."+type[t]+"_r = rate_cal(all."+type[t]+"_a, all."+type[t]+"_t)");
 			};
-	
+			
+			all.name = "合计";
 			footer.push(all);
-			footer.name = "全网";
-			json.rows = rows;
-			json.footer = footer;
+			json["rows"] = rows;
+			json["footer"] = footer;
 			
 			$("#rate").treegrid({
 				height: 900,
@@ -308,9 +244,9 @@
 					dataObj[month]["cbq"] = 0;
 					dataObj[month]["store"] = 0;
 				}else{
-					dataObj[month]["site"] += item.sites;
+					dataObj[month]["site"] += item.site;
 					dataObj[month]["cbq"] += item.cbq;
-					dataObj[month]["store"] += item.stores
+					dataObj[month]["store"] += item.store
 				}
 			});
 			var labels = [], data_s = [], data_c = [], data_a = [];
@@ -327,6 +263,9 @@
 				xAxis: [{
 					type: "category",
 					data: labels
+					axisLable: {
+						show: true
+					}
 				}],
 				yAxis: [{
 					type: "value"
@@ -359,13 +298,13 @@
 					if(item.imonth == month){
 						if(!dataObj.hasOwnProperty(item.org_name)){
 							dataObj[item.org_name]= {};
-							dataObj[item.org_name]["site"] = item.sites;
+							dataObj[item.org_name]["site"] = item.site;
 							dataObj[item.org_name]["cbq"] = item.cbq;
-							dataObj[item.org_name]["store"] = item.stores;
+							dataObj[item.org_name]["store"] = item.store;
 						}else{
-							dataObj[item.org_name]["site"] += item.sites;
+							dataObj[item.org_name]["site"] += item.site;
 							dataObj[item.org_name]["cbq"] += item.cbq;
-							dataObj[item.org_name]["store"] += item.stores;
+							dataObj[item.org_name]["store"] += item.store;
 						}
 					}
 				});
@@ -404,7 +343,7 @@
 					var data_s = [], data_c = [], labels = []
 					$.each(data, function(i, item){
 						if(month == item.imonth && org == item.org_name){
-							data_s.push(item.sites);
+							data_s.push(item.site);
 							data_c.push(item.cbq);
 							labels.push(item.center);
 						}
@@ -440,19 +379,19 @@
 				var month = item.imonth;
 				if(!dataObj.hasOwnProperty(month)){
 					dataObj[month] = {};
-					dataObj[month]["site_a"] = item.sites_a;
+					dataObj[month]["site_a"] = item.site_a;
 					dataObj[month]["cbq_a"] = item.cbq_a;
-					dataObj[month]["store_a"] = item.stores_a;
-					dataObj[month]["site_t"] = item.sites_t;
+					dataObj[month]["store_a"] = item.store_a;
+					dataObj[month]["site_t"] = item.site_t;
 					dataObj[month]["cbq_t"] = item.cbq_t;
-					dataObj[month]["store_t"] = item.stores_t;
+					dataObj[month]["store_t"] = item.store_t;
 				}else{
-					dataObj[month]["site_a"] += item.sites_a;
+					dataObj[month]["site_a"] += item.site_a;
 					dataObj[month]["cbq_a"] += item.cbq_a;
-					dataObj[month]["store_a"] += item.stores_a;
-					dataObj[month]["site_t"] += item.sites_t;
+					dataObj[month]["store_a"] += item.store_a;
+					dataObj[month]["site_t"] += item.site_t;
 					dataObj[month]["cbq_t"] += item.cbq_t;
-					dataObj[month]["store_t"] += item.stores_t;
+					dataObj[month]["store_t"] += item.store_t;
 				}
 			});
 			var data_s = [], data_c = [], data_a = [], labels = [];
@@ -505,19 +444,19 @@
 					if(month == item.imonth){
 						if(!dataObj.hasOwnProperty(org)){
 							dataObj[org] = {};
-							dataObj[org]["site_a"] = item.sites_a;
+							dataObj[org]["site_a"] = item.site_a;
 							dataObj[org]["cbq_a"] = item.cbq_a;
-							dataObj[org]["store_a"] = item.stores_a;
-							dataObj[org]["site_t"] = item.sites_t;
+							dataObj[org]["store_a"] = item.store_a;
+							dataObj[org]["site_t"] = item.site_t;
 							dataObj[org]["cbq_t"] = item.cbq_t;
-							dataObj[org]["store_t"] = item.stores_t;
+							dataObj[org]["store_t"] = item.store_t;
 						}else{
-							dataObj[org]["site_a"] += item.sites_a;
+							dataObj[org]["site_a"] += item.site_a;
 							dataObj[org]["cbq_a"] += item.cbq_a;
-							dataObj[org]["store_a"] += item.stores_a;
-							dataObj[org]["site_t"] += item.sites_t;
+							dataObj[org]["store_a"] += item.store_a;
+							dataObj[org]["site_t"] += item.site_t;
 							dataObj[org]["cbq_t"] += item.cbq_t;
-							dataObj[org]["store_t"] += item.stores_t;
+							dataObj[org]["store_t"] += item.store_t;
 						}
 					}
 				});
@@ -558,9 +497,9 @@
 					var data_a = [], data_s = [], data_c = [], labels = [];
 					$.each(data, function(i, item){
 						if(month == item.imonth && params.name == item.org_name){
-							var rate_s = rate_cal(item.sites_a, item.sites_t);
+							var rate_s = rate_cal(item.site_a, item.site_t);
 							var rate_c = rate_cal(item.cbq_a, item.cbq_t);
-							var rate_a = rate_cal(item.stores_a, item.stores_t);
+							var rate_a = rate_cal(item.store_a, item.store_t);
 							if(rate_s != undefined || rate_c != undefined || rate_a != undefined){
 								data_s.push(rate_s);
 								data_c.push(rate_c);
