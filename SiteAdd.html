@@ -33,19 +33,30 @@
 					waiting: true,
 					ondata: function(){
 						data =  this.getResponseJSON();
-						//showtree(data);
-						showCanvas1(data);
-						//showCanvas2(data);
+						showtree(data);
+						//showCanvas1(data);
 					}
 				});
 			});
-				
+			
+			//下拉框切换
+			function changesel(){
+				var sel = $("#toggle option:selected").val();
+				if(sel == "1"){
+				showCanvas1(data);
+				}else{
+					showCanvas2(data);
+				};	
+			};
+			
+						
 			//完成率计算
 			function rate_cal(add, target){
-				if((target != 0) && (target != "null") && (add != "null")){
-					return  Math.round(add/target*10000)/100 + "%"; //保留两位小数
+
+				if((target != 0) && (target != null) && (add != null)){
+					return  Math.round(add/target*10000)/100; //保留两位小数
 				}else{
-					return "";	
+					return ;	
 				}
 			};
 			
@@ -93,9 +104,6 @@
 						}
 					})
 					
-				
-				
-				
 					
 				//基础数据按层级关系处理成json格式
 				var obj = {};
@@ -119,7 +127,7 @@
 
 
 				//动态添加列
-				var row1 = [], row2 = [], row3 = [];
+				var row1 = ["<th field = 'name' rowspan = '3' width = '100px'>名称</th>"], row2 = [], row3 = [];
 				for(var key in monthid){
 					var month = key, id = monthid[key];
 					row1.push("<th colspan = '9' align = 'center'>"+key+"</th>");
@@ -131,9 +139,9 @@
 				row2.push("<th colspan = '3' align = 'center'>网点</th><th colspan = '3' align = 'center'>承包区</th><th colspan = '3' align = 'center'>门店</th>");
 				row3.push("<th field = 'site_c'>月前数量</th><th field = 'site_a'>本月新增</th><th field = 'site_r'>完成率</th><th field = 'cbq_c' >月前数量</th><th field = 'cbq_a' >本月新增</th><th field = 'cbq_r'>完成率</th><th field = 'store_c' >月前数量</th><th field = 'store_a'>本月新增</th><th field = 'store_r'>完成率</th>");
 				
-				$("#row1").innerHTML = row1.join("\n");
-				$("#row2").innerHTML = row2.join("\n");
-				$("#row3").innerHTML = row3.join("\n");
+				$$("row1").innerHTML = row1.join("\n");
+				$$("row2").innerHTML = row2.join("\n");
+				$$("row3").innerHTML = row3.join("\n");
 				
 				
 				//在rows中添加数据
@@ -145,6 +153,7 @@
 				all["cbq_t"] = 0;
 				all["store_a"] = 0;
 				all["store_t"] = 0;
+				
 				for(var n in monthid){
 					eval("all['site_a" + monthid[n] +"'] = 0");
 					eval("all['cbq_a" + monthid[n] +"'] = 0");
@@ -171,7 +180,8 @@
 							eval("cen[key1].store_a" + monthid[n] + "=0");
 							eval("cen[key1].store_t" + monthid[n] + "= 0");
 					};
-					
+				
+				
 					for(var key2 in center_to_org[key1]){
 						rec.id = orgid[key1]*Math.pow(10, len)+center_to_org[key1][key2];
 						rec.name = key2;
@@ -223,7 +233,9 @@
 						rows.push(rec);
 						rec = {};
 					}
-					
+				};
+				
+				for(var key1 in cen){
 					rec1 = cen[key1];
 					rec1.site_a = 0, rec1.cbq_a = 0, rec1.store_a = 0, rec1.site_t = 0, rec1.cbq_t = 0, rec1.store_t = 0;
 					
@@ -241,10 +253,8 @@
 							rec1.cbq_t += cen[key1][m]
 						}else if(m.indexOf("store_t") != "-1"){
 							rec1.store_t += cen[key1][m]
-						}
-						
-							
-					}
+						}		
+					};
 					
 					for(var n in rec1){
 						if(n != "site_c" && n != "cbq_c" && n != "store_c" && n.indexOf("_r") == "-1"){
@@ -258,9 +268,9 @@
 					rec1.site_r = rate_cal(rec1.site_a, rec1.site_t);
 					rec1.cbq_r = rate_cal(rec1.cbq_a, rec1.cbq_t);
 					rec1.store_r = rate_cal(rec1.store_a, rec1.store_t);
-					rows.push(rec1);	
-				
-			};
+					rows.push(rec1);
+				}
+							
 			
 			for(var str in all){
 				index = str.indexOf("_t");
@@ -270,14 +280,14 @@
 					eval("all." + t + " = rate_cal(all."+a+", all."+str+")");
 				};
 			};
-
+	
 			footer.push(all);
 			footer.name = "全网";
 			json.rows = rows;
 			json.footer = footer;
 			
-			$("#tree").treegrid({
-				height: 500,
+			$("#rate").treegrid({
+				height: 900,
 				treeField: "name",
 				idField: "id",
 				showFooter: true,
@@ -303,12 +313,12 @@
 					dataObj[month]["store"] += item.stores
 				}
 			});
-			var axis = [], data_s = [], data_c = [], data_a = [];
+			var labels = [], data_s = [], data_c = [], data_a = [];
 			for(var m in dataObj){
 				data_s.push(dataObj[m]["site"]);
 				data_c.push(dataObj[m]["cbq"]);
 				data_a.push(dataObj[m]["store"]);
-				axis.push(m);
+				labels.push(m);
 			};
 			
 			
@@ -316,7 +326,7 @@
 			var option = {
 				xAxis: [{
 					type: "category",
-					data: axis
+					data: labels
 				}],
 				yAxis: [{
 					type: "value"
@@ -325,7 +335,7 @@
 					trigger: "axis"
 				},
 				series: [{
-					name: "门店",
+					name: "网点",
 					type: "line",
 					data: data_s
 				},{
@@ -340,58 +350,69 @@
 			}
 			
 			myChart.setOption(option);
+			
 			myChart.on("click", function(params){
 				var month = params.name;
-				var data_a = {};
-				var data_s = [], data_c = [], axis = []; 
+				var dataObj = {};
+				var data_a = [], data_s = [], data_c = [], labels = []; 
 				$.each(data, function(i, item){
 					if(item.imonth == month){
-						if(!data_a.hasOwnProperty(item.org_name)){
-							data_a[item.org_name]= {};
-							data_a[item.org_name]["site"] = item.sites;
-							data_a[item.org_name]["cbq"] = item.cbq;
+						if(!dataObj.hasOwnProperty(item.org_name)){
+							dataObj[item.org_name]= {};
+							dataObj[item.org_name]["site"] = item.sites;
+							dataObj[item.org_name]["cbq"] = item.cbq;
+							dataObj[item.org_name]["store"] = item.stores;
 						}else{
-							data_a[item.org_name]["site"] += item.sites;
-							data_a[item.org_name]["cbq"] += item.stores;
+							dataObj[item.org_name]["site"] += item.sites;
+							dataObj[item.org_name]["cbq"] += item.cbq;
+							dataObj[item.org_name]["store"] += item.stores;
 						}
 					}
 				});
-				for(var n in data_a){
-					data_s.push(data_a[n]["site"]);
-					data_c.push(data_a[n]["cbq"]);
-					axis.push(n)
+				for(var n in dataObj){
+					data_s.push(dataObj[n]["site"]);
+					data_c.push(dataObj[n]["cbq"]);
+					data_a.push(dataObj[n]["store"]);
+					labels.push(n);
 				};
-				
-				myChart.setOption({
-					xAxis: {
-						data: axis
-					},
-					serirs: [{
-						name: "网点",
-						type: "bar",
-						stack: "门店",
-						data: data_s
-					},{
-						name: "承包区",
-						type: "bar",
-						stack: "门店",
-						data: data_c
-					}]
-				});
+				if(labels.length != 0){
+					myChart.setOption({
+						xAxis: {
+							data: labels
+						},
+						series: [{
+							name: "门店",
+							type: "bar",
+							stack: "门店",
+							
+						},{
+							name: "承包区",
+							type: "bar",
+							stack: "门店",
+							data: data_c
+						},{
+							name: "网点",
+							type: "bar",
+							stack: "门店",
+							data: data_s
+						}]
+					});
+				}
 				
 				myChart.on("click", function(params){
 					var org = params.name;
-					var data_s = [], data_c = [], centerlist = []
+					var data_s = [], data_c = [], labels = []
 					$.each(data, function(i, item){
 						if(month == item.imonth && org == item.org_name){
 							data_s.push(item.sites);
 							data_c.push(item.cbq);
-							centerlist.push(item.center);
+							labels.push(item.center);
 						}
 					});
-					myChart.setOption({
+					if(labels.length != 0){
+						myChart.setOption({
 						xAxis: [{
-							data: centerlist
+							data: labels
 						}],
 						series:[{
 							name: "网点",
@@ -405,6 +426,9 @@
 							data: data_c
 						}]
 					});
+					}
+					
+					
 				});
 			});
 			
@@ -416,34 +440,40 @@
 				var month = item.imonth;
 				if(!dataObj.hasOwnProperty(month)){
 					dataObj[month] = {};
-					dataObj[month]["site_a"] = 0;
-					dataObj[month]["cbq_a"] = 0;
-					dataObj[month]["store_a"] = 0;
-					dataObj[month]["site_t"] = 0;
-					dataObj[month]["cbq_t"] = 0;
-					dataObj[month]["store_t"] = 0;
+					dataObj[month]["site_a"] = item.sites_a;
+					dataObj[month]["cbq_a"] = item.cbq_a;
+					dataObj[month]["store_a"] = item.stores_a;
+					dataObj[month]["site_t"] = item.sites_t;
+					dataObj[month]["cbq_t"] = item.cbq_t;
+					dataObj[month]["store_t"] = item.stores_t;
 				}else{
 					dataObj[month]["site_a"] += item.sites_a;
 					dataObj[month]["cbq_a"] += item.cbq_a;
 					dataObj[month]["store_a"] += item.stores_a;
-					dataObj[month]["site_t"] = item.sites_t;
-					dataObj[month]["cbq_t"] = item.cbq_t;
-					dataObj[month]["store_t"] = item.stores_t;
+					dataObj[month]["site_t"] += item.sites_t;
+					dataObj[month]["cbq_t"] += item.cbq_t;
+					dataObj[month]["store_t"] += item.stores_t;
 				}
 			});
-			var data_s = [], data_c = [], data_a = [], axis = [];
+			var data_s = [], data_c = [], data_a = [], labels = [];
 			for(var n in dataObj){
-				data_s.push(rate_cal(dataObj[n]["site_a"], dataObj[n]["site_t"]));
-				data_c.push(rate_cal(dataObj[n]["cbq_a"], dataObj[n]["cbq_t"]));
-				data_a.push(rate_cal(dataObj[n]["store_a"], dataObj[n]["store_t"]));
-				axis.push(n)
+				var rate_s = rate_cal(dataObj[n]["site_a"], dataObj[n]["site_t"]);
+				var rate_c = rate_cal(dataObj[n]["cbq_a"], dataObj[n]["cbq_t"]);
+				var rate_a = rate_cal(dataObj[n]["store_a"], dataObj[n]["store_t"]);
+				if(rate_s != undefined || rate_c != undefined || rate_a != undefined){
+					data_s.push(rate_s);
+					data_c.push(rate_c);
+					data_a.push(rate_a);
+					labels.push(n)
+				}
+				
 			};
 			
 			var myChart = echarts.init(document.getElementById("canvas"));
 			var option = {
 				xAxis: [{
 					type: "category",
-					data: axis
+					data: labels
 				}],
 				yAxis: [{
 					type: "value"
@@ -452,10 +482,6 @@
 					trigger: "axis"
 				},
 				series: [{
-					name: "门店",
-					type: "line",
-					data: data_a
-				},{
 					name: "网点",
 					type: "line",
 					data: data_s
@@ -463,9 +489,14 @@
 					name: "承包区",
 					type: "line",
 					data: data_c
+				},{
+					name: "门店",
+					type: "line",
+					data: data_a
 				}]
 			};
 			myChart.setOption(option);
+			
 			myChart.on("click", function(params){
 				var dataObj = {};
 				var month = params.name;
@@ -474,65 +505,43 @@
 					if(month == item.imonth){
 						if(!dataObj.hasOwnProperty(org)){
 							dataObj[org] = {};
-							dataObj[org]["site_a"] = 0;
-							dataObj[org]["cbq_a"] = 0;
-							dataObj[org]["store_a"] = 0;
-							dataObj[org]["site_t"] = 0;
-							dataObj[org]["cbq_t"] = 0;
-							dataObj[org]["store_t"] = 0;
+							dataObj[org]["site_a"] = item.sites_a;
+							dataObj[org]["cbq_a"] = item.cbq_a;
+							dataObj[org]["store_a"] = item.stores_a;
+							dataObj[org]["site_t"] = item.sites_t;
+							dataObj[org]["cbq_t"] = item.cbq_t;
+							dataObj[org]["store_t"] = item.stores_t;
 						}else{
 							dataObj[org]["site_a"] += item.sites_a;
 							dataObj[org]["cbq_a"] += item.cbq_a;
 							dataObj[org]["store_a"] += item.stores_a;
-							dataObj[org]["site_t"] = item.sites_t;
-							dataObj[org]["cbq_t"] = item.cbq_t;
-							dataObj[org]["store_t"] = item.stores_t;
+							dataObj[org]["site_t"] += item.sites_t;
+							dataObj[org]["cbq_t"] += item.cbq_t;
+							dataObj[org]["store_t"] += item.stores_t;
 						}
 					}
 				});
-				var data_s = [], data_c = [], data_a = [], axis = []; 
+				var data_s = [], data_c = [], data_a = [], labels = []; 
 				for(var n in dataObj){
-					data_s.push(rate_cal(dataObj[n]["site_a"], dataObj[n]["site_t"]));
-					data_c.push(rate_cal(dataObj[n]["cbq_a"], dataObj[n]["cbq_t"]));
-					data_a.push(rate_cal(dataObj[n]["store_a"], dataObj[n]["store_t"]));
-					axis.push(n);
+					var rate_s = rate_cal(dataObj[n]["site_a"], dataObj[n]["site_t"]);
+					var rate_c = rate_cal(dataObj[n]["cbq_a"], dataObj[n]["cbq_t"]);
+					var rate_a = rate_cal(dataObj[n]["store_a"], dataObj[n]["store_t"]);
+					if(rate_s != undefined || rate_c != undefined || rate_a != undefined){
+						data_s.push(rate_s);
+						data_c.push(rate_c);
+						data_a.push(rate_a);
+						labels.push(n)
+					}
 				};
-				myChart.setOption({
-					xAxis: [{
-						data: axis
-					}],
-					series: [{
-						name: "网点",
-						type: "bar",
-						data:data_s
-					},{
-						name: "承包区",
-						type: "bar",
-						data: data_c
-					},{
-						name: "门店",
-						type: "bar",
-						data: data_a
-					}]
-				});
-				myChart.on("click", function(param){
-					var data_a = [], data_s = [], data_c = [], axis = [];
-					$.each(data, function(i, item){
-						if(month == item.imonth && params.name == item.org_name){
-							data_s.push(rate_cal(item.sites_a, item.sites_t));
-							data_c.push(rate_cal(item.cbq_a, item.cbq_t));
-							data_a.push(rate_cal(item.stores_a, item.stores_t))
-							axis.push(item.center);
-						}
-					});
+				if(labels.length != 0){
 					myChart.setOption({
 						xAxis: [{
-							data: axis
+							data: labels
 						}],
-						serirs: [{
+						series: [{
 							name: "网点",
 							type: "bar",
-							data: data_s
+							data:data_s
 						},{
 							name: "承包区",
 							type: "bar",
@@ -543,6 +552,45 @@
 							data: data_a
 						}]
 					});
+				};
+				
+				myChart.on("click", function(params){
+					var data_a = [], data_s = [], data_c = [], labels = [];
+					$.each(data, function(i, item){
+						if(month == item.imonth && params.name == item.org_name){
+							var rate_s = rate_cal(item.sites_a, item.sites_t);
+							var rate_c = rate_cal(item.cbq_a, item.cbq_t);
+							var rate_a = rate_cal(item.stores_a, item.stores_t);
+							if(rate_s != undefined || rate_c != undefined || rate_a != undefined){
+								data_s.push(rate_s);
+								data_c.push(rate_c);
+								data_a.push(rate_a);
+								labels.push(item.center);
+							}
+							
+						}
+					});
+					if(labels.length != 0){
+						myChart.setOption({
+							xAxis: [{
+								data: labels
+							}],
+							series: [{
+								name: "网点",
+								type: "bar",
+								data: data_s
+							},{
+								name: "承包区",
+								type: "bar",
+								data: data_c
+							},{
+								name: "门店",
+								type: "bar",
+								data: data_a
+							}]
+						});
+					}
+					
 				});
 			});
 		};
@@ -551,10 +599,10 @@
 	<head>
 	<body>
 		<div id = "wrapper">
-				<div class = "easyui-layout" style = "width: 700px; height: 500px">
+				<div class = "easyui-layout" style = "height: 600px">
 					<div id = "graph" data-options = "region: 'north', split: true" style = "height: 200px">
-						<div id = 'toggle'>
-							<select>
+						<div>
+							<select id = 'toggle' onchange = "changesel()">
 								<option value = '1'>数量统计</option>
 								<option value = '2'>完成率统计</option>
 							</select>
@@ -565,8 +613,8 @@
 						<table id = "rate" data-options = "fit: true">
 							<thead>
 									<tr id = "row1">
-										<th field = 'name' rowspan = '3' width = "100px">名称</th>
-									<!--	<th colspan = '9' align = 'center'>月份</th> -->
+									<!--	<th field = 'name' rowspan = '3' width = '100px'>名称</th>
+										<th colspan = '9' align = 'center'>月份</th> -->
 									</tr>
 									
 									<tr id = "row2">
