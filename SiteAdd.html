@@ -17,6 +17,11 @@
 		<script type = "text/javascript" src = "../src/main/webapp/more/bi_template/echart.js"></script>
 		<script type = "text/javascript" src = "../src/main/webapp/more/bi_template/common.js"></script>
 		<script type = "text/javascript" src = "../src/main/webapp/pages/js/common.js"></script>
+		<style type = "text/css">
+			th span {
+				display: block;
+			}
+		</style>
 		<script type = "text/javascript">
 			var data;
 			
@@ -33,7 +38,7 @@
 					waiting: true,
 					ondata: function(){
 						data =  this.getResponseJSON();
-						//showtree(data);
+						showtree(data);
 						showCanvas1(data);
 					}
 				});
@@ -106,17 +111,17 @@
 					
 
 				//动态添加列
-				var row1 = ["<th field = 'name' rowspan = '3' width = '100px'>名称</th>"], row2 = [], row3 = [];
+				var row1 = ["<th field = 'name' rowspan = '3' width = '130px' align = 'center'>名称</th>"], row2 = [], row3 = [];
 				for(var key in monthid){
 					var month = key, id = monthid[key];
 					row1.push("<th colspan = '9' align = 'center'>"+key+"</th>");
 					row2.push("<th colspan = '3' align = 'center'>网点</th><th colspan = '3' align = 'center'>承包区</th><th colspan = '3' align = 'center'>门店</th>");
-					row3.push("<th field = 'site_c'"+id+">月前数量</th><th field = 'site_a' "+id+">本月新增</th><th field = 'site_r'"+id+" >完成率</th><th field = 'cbq_c' "+id+">月前数量</th><th field = 'cbq_a' "+id+">本月新增</th><th field = 'cbq_r'"+id+">完成率</th><th field = 'store_c'"+id+" >月前数量</th><th field = 'store_a' "+id+">本月新增</th><th field = 'store_r' "+id+">完成率</th>");
+					row3.push("<th field = 'site_c"+id+"' width = '30px'><span>月前数量</span></th><th field = 'site_a"+id+"' width = '30px'><span>本月新增</span></th><th field = 'site_r"+id+"' width = '30px'><span>完成率</span></th><th field = 'cbq_c"+id+"' width = '30px'><span>月前数量</span></th><th field = 'cbq_a"+id+"' width = '30px'><span>本月新增</span></th><th field = 'cbq_r"+id+"' width = '30px'><span>完成率</span></th><th field = 'store_c"+id+"' width = '30px'><span>月前数量</span></th><th field = 'store_a"+id+"' width = '30px'><span>本月新增</span></th><th field = 'store_r"+id+"' width = '30px'><span>完成率</span></th>");
 
 				};
 				row1.push("<th colspan = '6' align = 'center'>累计</th>");
 				row2.push("<th colspan = '2' align = 'center'>网点</th><th colspan = '2' align = 'center'>承包区</th><th colspan = '2' align = 'center'>门店</th>");
-				row3.push("<th field = 'site_a'>本月新增</th><th field = 'site_r'>完成率</th><th field = 'cbq_a' >本月新增</th><th field = 'cbq_r'>完成率</th><th field = 'store_a'>本月新增</th><th field = 'store_r'>完成率</th>");
+				row3.push("<th field = 'site_a' width = '30px'>本月新增</th><th field = 'site_r' width = '30px'>完成率</th><th field = 'cbq_a' width = '30px'>本月新增</th><th field = 'cbq_r' width = '30px'>完成率</th><th field = 'store_a' width = '30px'>本月新增</th><th field = 'store_r' width = '30px'>完成率</th>");
 				
 				$$("row1").innerHTML = row1.join("\n");
 				$$("row2").innerHTML = row2.join("\n");
@@ -124,29 +129,30 @@
 				
 				
 				//在rows中添加数据
-				var rec = {}, rec1 = {}, cen = {}, all = {};
+				var rec = {}, rec1 = {}, cen = {}, cen1 = {}, all = {}, all1 = {};
 				var type = ["site", "cbq", "store"]
 				
 				for(var t = 0; t < type.length; t++){
 					eval("all['"+type[t]+"_a'] = 0");
-					eval("all['"+type[t]+"_t'] = 0");
+					eval("all1['"+type[t]+"_t'] = 0");
 					eval("all['"+type[t]+"_c'] = 0");
 				};
 				
 				for(var n in monthid){
 					for(var t = 0; t < type.length; t++){
 						eval("all['"+type[t]+"_a" + monthid[n] +"'] = 0");
-						eval("all['"+type[t]+"_t" + monthid[n] +"'] = 0");
+						eval("all1['"+type[t]+"_t" + monthid[n] +"'] = 0");
 						eval("all['"+type[t]+"_c" + monthid[n] +"'] = 0");
 					}
 				};
 				
 				for(var key1 in center_to_org){
 					cen[key1] = {};
+					cen1[key1] = {};
 					for(var n in monthid){
 						for(var t = 0; t < type.length; t++){
 							eval("cen[key1]['"+type[t]+"_a" + monthid[n] +"'] = 0");
-							eval("cen[key1]['"+type[t]+"_t" + monthid[n] +"'] = 0");
+							eval("cen1[key1]['"+type[t]+"_t" + monthid[n] +"'] = 0");
 							eval("cen[key1]['"+type[t]+"_c" + monthid[n] +"'] = 0");
 						}
 					}
@@ -158,69 +164,75 @@
 					
 					if(!rec.hasOwnProperty(center)){
 						rec[center] = {};
+						rec1[center] = {};
 						rec[center].id = orgid[org]*Math.pow(10, len)+center_to_org[org][center];
 						rec[center].name = center;
 						rec[center]._parentId = orgid[org];
 						for(var t = 0; t < type.length; t++){
 							eval("rec[center]."+type[t]+"_a = 0");
-							eval("rec[center]."+type[t]+"_t = 0");
+							eval("rec1[center]."+type[t]+"_t = 0");
 						};
 					}
-					
+						
 					for(var t = 0; t < type.length; t++){
 						eval("rec[center]."+type[t]+"_c"+monthid[month]+"=item."+type[t]+" - item."+type[t]+"_a");
 						eval("rec[center]."+type[t]+"_a"+monthid[month]+"=item."+type[t]+"_a");
 						eval("rec[center]."+type[t]+"_r"+monthid[month]+"=rate_cal(item."+type[t]+"_a, item."+type[t]+"_t)");
 						//分拨横向累计
 						eval("rec[center]."+type[t]+"_a += item."+type[t]+"_a");
-						eval("rec[center]."+type[t]+"_t += item."+type[t]+"_t");
+						eval("rec1[center]."+type[t]+"_t += item."+type[t]+"_t");
 						//分拨纵向累加
 						eval("cen[org]."+type[t]+"_c"+monthid[month]+"+=item."+type[t]+" - item."+type[t]+"_a");
 						eval("cen[org]."+type[t]+"_a"+monthid[month]+"+=item."+type[t]+"_a");
-						eval("cen[org]."+type[t]+"_t"+monthid[month]+"+=item."+type[t]+"_t")
+						eval("cen1[org]."+type[t]+"_t"+monthid[month]+"+=item."+type[t]+"_t")
 					}
 				});
+				
 				//分拨横向完成比计算
 				for(var i in rec){
 					for(var t = 0; t < type.length; t++){
-					eval("rec[i]."+type[t]+"_r = rate_cal(rec[i]."+type[t]+"_a, rec[i]."+type[t]+"_t)");
+					eval("rec[i]."+type[t]+"_r = rate_cal(rec[i]."+type[t]+"_a, rec1[i]."+type[t]+"_t)");
 					}
 					rows.push(rec[i]);
 				}
 				
+				
 				for(var i in cen){
 					cen[i].id = orgid[i];
 					cen[i].name = i;
+					//cen[i].state = "closed";
 					//分公司纵向累加
 					for(var j in monthid){
 						var mon = monthid[j];
 						for(var t = 0; t < type.length; t++){
 							eval("all."+type[t]+"_c"+mon+"+=cen[i]."+type[t]+"_c"+mon);
 							eval("all."+type[t]+"_a"+mon+"+=cen[i]."+type[t]+"_a"+mon);
-							eval("all."+type[t]+"_t"+mon+"+=cen[i]."+type[t]+"_t"+mon);
+							eval("all1."+type[t]+"_t"+mon+"+=cen1[i]."+type[t]+"_t"+mon);
 						}
 					}
-					cen[i].site_r = rate_cal(cen[i].site_a, cen[i].site_t);
-					cen[i].cbq_r = rate_cal(cen[i].cbq_a, cen[i].cbq_t);
-					cen[i].store_r = rate_cal(cen[i].store_a, cen[i].store_t);
+					cen[i].site_r = rate_cal(cen[i].site_a, cen1[i].site_t);
+					cen[i].cbq_r = rate_cal(cen[i].cbq_a, cen1[i].cbq_t);
+					cen[i].store_r = rate_cal(cen[i].store_a, cen1[i].store_t);
 					rows.push(cen[i]);
 				}
-			
+
 			for(var t = 0; t < type.length; t++){
 				for(var j in monthid){
 					var mon = monthid[j];
 					//分公司横向完成比计算
-					eval("all."+type[t]+"_r"+mon+"=rate_cal(all."+type[t]+"_a"+mon+", all."+type[t]+"_t"+mon+")");
+					eval("all."+type[t]+"_r"+mon+"=rate_cal(all."+type[t]+"_a"+mon+", all1."+type[t]+"_t"+mon+")");
 					eval("all."+type[t]+"_a+=all."+type[t]+"_a"+mon);
-					eval("all."+type[t]+"_t+=all."+type[t]+"_t"+mon);
+					eval("all1."+type[t]+"_t+=all1."+type[t]+"_t"+mon);
 				}
-				eval("all."+type[t]+"_r = rate_cal(all."+type[t]+"_a, all."+type[t]+"_t)");
+				
+				eval("all."+type[t]+"_r = rate_cal(all."+type[t]+"_a, all1."+type[t]+"_t)");
 			};
 			
 			all.name = "合计";
 			footer.push(all);
 			json["rows"] = rows;
 			json["footer"] = footer;
+			json["total"] = rows.length;
 			
 			$("#rate").treegrid({
 				height: 900,
@@ -229,7 +241,7 @@
 				showFooter: true,
 				data: json
 			});
-		
+
 		};
 	
 		
@@ -262,7 +274,7 @@
 			var option = {
 				xAxis: [{
 					type: "category",
-					data: labels
+					data: labels,
 					axisLable: {
 						show: true
 					}
@@ -539,7 +551,7 @@
 	<body>
 		<div id = "wrapper">
 				<div class = "easyui-layout" style = "height: 600px">
-					<div id = "graph" data-options = "region: 'north', split: true" style = "height: 200px">
+					<div id = "graph" data-options = "region: 'north', split: true" style = "height: 300px">
 						<div>
 							<select id = 'toggle' onchange = "changesel()">
 								<option value = '1'>数量统计</option>
@@ -548,7 +560,7 @@
 						</div>
 						<div id = "canvas" style = "height: 100%"></div>
 					</div>
-					<div id = "tree" data-options = "region: 'center', split: true" style = "height: 100px">
+					<div id = "tree" data-options = "region: 'center', split: true" style = "height: 300px">
 						<table id = "rate" data-options = "fit: true">
 							<thead>
 									<tr id = "row1">
