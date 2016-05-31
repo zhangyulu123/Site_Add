@@ -42,11 +42,12 @@
 						data =  this.getResponseJSON();
 						basicObj(data);
 						combosel();
-						combosel2();
-						combosel1();
-						showtree(data);
+						monsel();
+						//combosel2();
+						//combosel1();
+						//showtree(data);
 						showCanvas(data);
-						showCanvas2(data);
+						//showCanvas2(data);
 					}
 				});
 			});
@@ -107,6 +108,7 @@
 				});
 					
 			}
+		
 			
 			//门店新增表明细、完成率明细
 			function showtree(data){
@@ -260,6 +262,38 @@
 
 		};
 		
+		function monsel(){
+			$("#mon").datebox({
+			onShowPanel: function () {
+			span.trigger('click'); 
+			if (!tds) setTimeout(function () {
+				tds = p.find('div.calendar-menu-month-inner td');
+				tds.click(function (e) {
+					e.stopPropagation(); 
+					var year = /\d{4}/.exec(span.html())[0]
+					, month = parseInt($(this).attr('abbr'), 10) + 1; 
+					$('#mon').datebox('hidePanel')
+					.datebox('setValue', year+'-'+(month<10?('0'+month):month)); 
+				});
+			}, 0)
+            },
+            parser: function (s) {
+                if (!s) return new Date();
+                var arr = s.split('-');
+                return new Date(parseInt(arr[0], 10), parseInt(arr[1], 10)-1, 1);
+            },
+            formatter: function (d) { 
+				return d.getFullYear()+'-'+(d.getMonth()<10?('0'+d.getMonth()):d.getMonth()); 
+				}
+			});
+			
+			var p = $('#mon').datebox('panel'), 
+            tds = false, 
+            span = p.find('span.calendar-text'); 
+			
+			var d = new Date(params.param1.replace(/-/,"/"));
+			$("#mon").datebox("setValue", d);
+		}
 		
 		function  combosel(){
 			var orglist = [], centerlist = [];
@@ -305,6 +339,10 @@
 				data: centerlist
 			});
 				
+		}
+		
+		function showdata(data){
+			var org = $("#org")
 		}
 		
 		//对比中的comobox
@@ -605,9 +643,7 @@
 			var option1 = {
 				color: ["#D14A61", "#FD9C35", "#61A0A8"],
 				title: {
-					text: ($("#center").combobox("getText")=="全部")?$("#org").combobox("getText")+"门店数量统计":$("#center").combobox("getText")+"门店数量统计" ,
-					x: "center",
-					y: "top"
+					text: ($("#center").combobox("getText")=="全部")?$("#org").combobox("getText")+"门店数量统计":$("#center").combobox("getText")+"门店数量统计" 
 				},
 				xAxis: [{
 					type: "category",
@@ -638,8 +674,6 @@
 				},
 				legend: {
 					show: true,
-					x: "right",
-					y: "top",
 					data: ["门店", "网点", "承包区"]
 				},
 				series: [{
@@ -666,9 +700,7 @@
 			var option2 = {
 				color: ["#D14A61", "#FD9C35", "#61A0A8"],
 				title: {
-					text: ($("#center").combobox("getText")=="全部")?$("#org").combobox("getText")+"门店完成率统计":$("#center").combobox("getText")+"门店完成率统计",
-					x: "center",
-					y: "top"
+					text: ($("#center").combobox("getText")=="全部")?$("#org").combobox("getText")+"门店完成率统计":$("#center").combobox("getText")+"门店完成率统计"
 				},
 				xAxis: [{
 					type: "category",
@@ -699,8 +731,6 @@
 				},
 				legend: {
 					show: true,
-					x: "right",
-					y: "top",
 					data: ["门店", "网点", "承包区"]
 				},
 				series: [{
@@ -727,8 +757,9 @@
 		
 		//按月份筛选数据
 		function amount_Analysis1(data){
-			var mon = $("#mon").combobox("getText");
-			var org = $("#org1").combobox("getText");
+			var mon = $("#mon").datebox("getText");
+			var org = $("#org").combobox("getText");
+			var center = $("#center").combobox("getText");
 			var dataObj = {};
 			if(org == "全网"){
 				$.each(data, function(i, item){
@@ -791,7 +822,7 @@
 				data_store_r.push((r3 == undefined)?0.01:r3);
 				
 			}
-			return [label1, label2, data_s, data_c, data_site_r, data_cbq_r, data_store_r];
+			
 		};
 		
 		function showCanvas2(data){
@@ -920,48 +951,32 @@
 		</script>
 	<head>
 	<body>
-		<div id = "wrapper">
-			<!--<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>
-			<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/> -->
-			<div class = "easyui-tabs" style = "width: auto; height: 650px">
-				<div class = "easyui-layout" title = "概况" style = "width: auto; height: 600px">
-					<form>
+		<div id = "main" class = "easyui-layout" style = "height: 600px; width: 900px">
+			<div data-options = "region: 'center'" style = "width: 60%">
+				<div>
 					<span>分公司：</span>
 					<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>
 					<span>分拨：</span>
 					<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/>
 					<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas(data)"/>
-					</form>
-					<div id = "canvas1" data-options = "region: 'north', split: true" style = "height: 300px"></div>
-					<div id = "canvas2" data-options = "region: 'center', split: true" style = "height: 300px"></div>
-				</div> 
-				<div class = "easyui-layout" title = "对比" style = "width: auto; height: 600px">
-					<form>
+				</div>
+				<div class = "easyui-layout" style = "height: 560px">
+					<div id = "canvas1" data-options = "region: 'center'" style = "height: 50%"></div>
+					<div id = "canvas2" data-options = "region: 'south'" style = "height: 50%"></div>
+				</div>
+				
+			</div>
+			<div data-options = "region: 'east'" style = "width: 40%">
+				<div>
 					<span>月份：</span>
-					<input  class = "easyui-combobox" name = "mon" id = "mon" style = "width: 100px"/>
-					<span>分公司：</span>
-					<input  class = "easyui-combox" name = "org" id = "org1" style = "width: 100px"/>
-					<input 	class = "easyui-linkbutton" id = "sbt1" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas2(data)"/>
-					</form>
-					<div id = "canvas3" data-options = "region: 'north', split: true" style = "width: 900px; height: 300px"></div>
-					<div id = "canvas4" data-options = "region: 'center', split: true" style = "width: 900px; height: 300px"></div>
+					<input class = "easyui-datebox" id = "mon" name = "mon" style = "width: 100px"/>
+					<input 	class = "easyui-linkbutton" id = "sbt1" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas(data)"/>
 				</div>
-				<div title = "明细">
-					<form>
-					<span>从月份：</span>
-					<input  class = "easyui-datebox" name = "from_mon" id = "from_mon" style = "width: 100px"/>
-					<span>到月份：</span>
-					<input  class = "easyui-datebox" name = "to_mon" id = "to_mon" style = "width: 100px"/>
-					<input 	class = "easyui-linkbutton" id = "sbt2" style = "width: 50px; height: 25px" value = "确定" onclick = "showtree(data)"/>
-					</form>
-					<table id = "rate">
-						<thead>
-								<tr id = "row1"></tr>
-								<tr id = "row2"></tr>
-								<tr id= "row3"></tr>
-						</thead>
-					</table>
+				<div class = "easyui-layout">
+					<table class = "easyui-datagrid" id = "amount" style = "height: 40%"></table>
+					<table class = "easyui-datagrid" id = "rate"></table>
 				</div>
+				
 			</div>
 		</div>
 	</body>
