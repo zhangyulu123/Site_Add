@@ -18,8 +18,8 @@
 		<script type = "text/javascript" src = "../src/main/webapp/more/bi_template/common.js"></script>
 		<script type = "text/javascript" src = "../src/main/webapp/pages/js/common.js"></script>
 		<style type = "text/css">
-			th span {
-				display: block;
+			html, body {
+				height: 100%;
 			}
 		</style>
 		<script type = "text/javascript">
@@ -951,20 +951,19 @@
 		</script>
 	<head>
 	<body>
-		<div id = "main" class = "easyui-layout" style = "height: 600px; width: 900px">
+		<div id = "main" class = "easyui-layout" fit = "true">
 			<div data-options = "region: 'center'" style = "width: 60%">
-				<div>
-					<span>分公司：</span>
-					<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>
-					<span>分拨：</span>
-					<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/>
-					<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas(data)"/>
+				<div class = "easyui-layout" fit = "true">
+					<div data-options = "region: 'north'" style = "height: 10%">
+						<span>分公司：</span>
+						<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>
+						<span>分拨：</span>
+						<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/>
+						<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas(data)"/>
+					</div>
+					<div id = "canvas1" data-options = "region: 'center'" style = "height: 45%"></div>
+					<div id = "canvas2" data-options = "region: 'south'" style = "height: 45%"></div>
 				</div>
-				<div class = "easyui-layout" style = "height: 560px">
-					<div id = "canvas1" data-options = "region: 'center'" style = "height: 50%"></div>
-					<div id = "canvas2" data-options = "region: 'south'" style = "height: 50%"></div>
-				</div>
-				
 			</div>
 			<div data-options = "region: 'east'" style = "width: 40%">
 				<div>
@@ -972,9 +971,16 @@
 					<input class = "easyui-datebox" id = "mon" name = "mon" style = "width: 100px"/>
 					<input 	class = "easyui-linkbutton" id = "sbt1" style = "width: 50px; height: 25px" value = "确定" onclick = "showCanvas(data)"/>
 				</div>
-				<div class = "easyui-layout">
-					<table class = "easyui-datagrid" id = "amount" style = "height: 40%"></table>
-					<table class = "easyui-datagrid" id = "rate"></table>
+				<div class = "easyui-layout" fit = "true">
+					<div data-options = "region: 'north'" style = "height: 40%">
+						<table id = "amount"></table>
+					</div>
+					<div data-options = "region: 'center'" style = "height: 30%">
+						<table  id = "add" ></table>
+					</div>
+					<div data-options = "region: 'south'" style = "height: 30%">
+						<table  id = "rate"></table>
+					</div>
 				</div>
 				
 			</div>
