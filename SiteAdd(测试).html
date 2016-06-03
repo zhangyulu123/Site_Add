@@ -30,13 +30,15 @@
 				left: 86%;
 				top: 3px;
 				z-index: 99;
+				width: 60px;
 			}
 			
 			#save2 {
 				position: absolute;
 				left: 86%;
 				top: 34%;
-				z-index: 99;	
+				z-index: 99;
+				width: 60px;
 			}
 			
 			#save3 {
@@ -44,6 +46,7 @@
 				left: 86%;
 				top: 67%;
 				z-index: 99;
+				width: 60px;
 			}
 			
 			#toggle {
@@ -64,11 +67,11 @@
 		<script type = "text/javascript">
 			var data;
 			var center_to_org = {}, orgid = {}, monthid = {};//下拉框数据引用，同时标记分拨id
-			//var params = {};
-			var params = {"param1": "2016-4-13", "param2": "-1", "param3": "-1"};
+			var params = {};
+			//var params = {"param1": "2016-04-13", "param2": "-1", "param3": "-1"};
 			var curmon = "";
-			//var DATA_URL = "/tss/data/json/2212";
-			var DATA_URL = "http://10.9.45.64:8080/tss/data/json/2212";
+			var DATA_URL = "/tss/data/json/2212";
+			//var DATA_URL = "http://10.9.45.64:8080/tss/data/json/2212";
 			var method = "POST";
 			
 			$(function(){
@@ -94,7 +97,7 @@
 					}
 				});
 				
-				curmon = params.param1.split("-")[1]+"月";
+				curmon = parseInt(params.param1.split("-")[1])+"月";
 				
 				if(params.param2 != "-1" &&  params.param3 != "-1"){
 					$("#radio").empty();
@@ -538,10 +541,13 @@
 			var amount = func[0];
 			var rate = func[2];
 			var tip = func[3];
-			var label1 = [], label2 = [], data_s = [], data_c = [], data_r = [];
+			var label1 = [], label2 = [], label3 = [], data_s = [], data_c = [], data_r = [];
 			for(var i = 0; i < amount.length; i++){
 				if(tip){
 					label1.push(amount[i]["org"].replace("分公司", ""));
+					if(!label3.contains(amount[i]["belong"])){
+						label3.push(amount[i]["belong"]);
+					}
 				}else{
 					label1.push(amount[i]["center"])
 				}
@@ -563,8 +569,8 @@
 				color: ["#D14A61", "#FD9C35", "#61A0A8"],
 				title: {
 					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量对比":curmon+$("#center").combobox("getText")+"门店数量对比", 
-					x: "100",
-					y: "10"
+					x: "50",
+					y: "5"
 				},
 				xAxis: [{
 					type: "category",
@@ -579,6 +585,10 @@
 						interval: 0
 					},
 					data: label1	
+				},{
+					type: "category",
+					data: label3,
+					splitLine: false
 				}],
 				yAxis: [{
 					type: "value",
@@ -600,8 +610,8 @@
 				legend: {
 					show: true,
 					data: ["网点", "承包区"],
-					x: "700",
-					y: "30"
+					x: "780",
+					y: "10"
 				},
 				series: [{
 					name: "网点",
@@ -622,8 +632,8 @@
 				color: ["#D14A61", "#FD9C35", "#61A0A8"],
 				title: {
 					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率对比":curmon+$("#center").combobox("getText")+"门店完成率对比",
-					x: "100",
-					y: "10"
+					x: "50",
+					y: "5"
 				},
 				xAxis: [{
 					type: "category",
@@ -638,6 +648,10 @@
 						interval: 0
 					},
 					data: label2
+				},{
+					type: "category",
+					data: label3,
+					splitLine: false
 				}],
 				yAxis: [{
 					type: "value",
@@ -663,8 +677,8 @@
 				legend: {
 					show: true,
 					data: ["门店"],
-					x: "700",
-					y: "30"
+					x: "780",
+					y: "10"
 				},
 				series: [{
 					name: "门店",
@@ -697,7 +711,7 @@
 			//to_error();
 			//var mon = $("#mon").datebox("getText");
 			var d = params.param1.split("-");
-			var mon = d[0] + "-" +((parseInt(d[1])<10)?("0"+d[1]):d[1]);
+			var mon = d[0] + "-" +d[1];
 			var org = $("#org").combobox("getText");
 			var center = $("#center").combobox("getText");
 			var tip = 1;//标记是否需要展示集团列

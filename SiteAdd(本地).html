@@ -27,13 +27,15 @@
 				left: 86%;
 				top: 3px;
 				z-index: 99;
+				width: 60px;
 			}
 			
 			#save2 {
 				position: absolute;
 				left: 86%;
 				top: 34%;
-				z-index: 99;	
+				z-index: 99;
+				width: 60px;
 			}
 			
 			#save3 {
@@ -41,13 +43,15 @@
 				left: 86%;
 				top: 67%;
 				z-index: 99;
+				width: 60px;
 			}
 			
 			#toggle {
 				display: inline-block;
 				position: relative;
-				left: 5%;
+				left: 30%;
 				top: 15px;
+				
 			}
 			
 			#radio {
@@ -57,12 +61,19 @@
 				top: 30px;
 			}
 			
+			#headtxt {
+				font-size: 20px;
+				display: inline-block;
+				position: relative;
+				left: 5%;
+			}
+			
 		</style>
 		<script type = "text/javascript">
 			var data;
 			var center_to_org = {}, orgid = {}, monthid = {};//下拉框数据引用，同时标记分拨id
-			var params = {"param1": "2016-4-13", "param2": "-1", "param3": "-1"};
-			var curmon = params.param1.split("-")[1]+"月";
+			var params = {"param1": "2016-04-13", "param2": "-1", "param3": "-1"};
+			var curmon = parseInt(params.param1.split("-")[1])+"月";
 			$(function(){
 				
 				var DATA_URL = "http://10.9.45.64:8080/tss/data/json/2212";
@@ -427,12 +438,7 @@
 			
 			var myChart1 = echarts.init(document.getElementById("canvas1"));
 			var option1 = {
-				color: ["#D14A61", "#FD9C35", "#61A0A8"],
-				title: {
-					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量统计":curmon+$("#center").combobox("getText")+"门店数量统计",
-					x: "100",
-					y: "10"
-				},
+				color:['#233C63','#0086D1','#ef8200','#233C63'],
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -481,21 +487,26 @@
 					type: "bar",
 					barGap: 0,
 					data: func1[3]
-				}]
+				}],
+				animation: false
 			};
 			
 			myChart1.setOption(option1);
+			
+			$("#canvas1").panel({
+				title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量统计":curmon+$("#center").combobox("getText")+"门店数量统计"
+			});
 			
 			var myChart2 = echarts.init(document.getElementById("canvas2"));
 			
 			
 			var option2 = {
-				color: ["#D14A61", "#FD9C35", "#61A0A8"],
-				title: {
-					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率统计":curmon+$("#center").combobox("getText")+"门店完成率统计",
-					x: "100",
-					y: "10"
-				},
+				color:['#233C63','#0086D1','#ef8200','#233C63'],
+				//title: {
+					//text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率统计":curmon+$("#center").combobox("getText")+"门店完成率统计",
+					//x: "100",
+					//y: "10"
+				//},
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -545,7 +556,7 @@
 					]],
 						itemStyle: {
 							normal:{
-								color: "rgba(0,0,0,1)",
+								color: "rgba(255,0,0,1)",
 								label: {
 									formatter: "100%"
 								}
@@ -563,11 +574,12 @@
 					type: "bar",
 					barGap: 0,
 					data: func2[3]
-				}]
+				}],
+				animation: false
 			}
 			
 			myChart2.setOption(option2);
-			
+			$("#canvas2").panel({title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率统计":curmon+$("#center").combobox("getText")+"门店完成率统计"});
 			
 		};
 		
@@ -577,10 +589,13 @@
 			var amount = func[0];
 			var rate = func[2];
 			var tip = func[3];
-			var label1 = [], label2 = [], data_s = [], data_c = [], data_r = [];
+			var label1 = [], label2 = [], label3 = [], data_s = [], data_c = [], data_r = [];
 			for(var i = 0; i < amount.length; i++){
 				if(tip){
 					label1.push(amount[i]["org"].replace("分公司", ""));
+					if(!label3.contains(amount[i]["belong"])){
+						label3.push(amount[i]["belong"]);
+					}
 				}else{
 					label1.push(amount[i]["center"])
 				}
@@ -599,13 +614,14 @@
 			
 			var myChart1 = echarts.init(document.getElementById("canvas1"));
 			var option1 = {
-				color: ["#D14A61", "#FD9C35", "#61A0A8"],
-				title: {
-					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量对比":curmon+$("#center").combobox("getText")+"门店数量对比", 
-					x: "100",
-					y: "10"
-				},
+				color:['#233C63','#0086D1','#ef8200','#233C63'],
+				//title: {
+					//text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量对比":curmon+$("#center").combobox("getText")+"门店数量对比", 
+					//x: "50",
+					//y: "5"
+				//},
 				xAxis: [{
+					position: "bottom",
 					type: "category",
 					axisLine: {
 						lineStyle: {
@@ -618,6 +634,10 @@
 						interval: 0
 					},
 					data: label1	
+				},{
+					type: "category",
+					data: label3,
+					splitLine: false
 				}],
 				yAxis: [{
 					type: "value",
@@ -639,8 +659,8 @@
 				legend: {
 					show: true,
 					data: ["网点", "承包区"],
-					x: "700",
-					y: "30"
+					x: "780",
+					y: "10"
 				},
 				series: [{
 					name: "网点",
@@ -652,18 +672,21 @@
 					type: "bar",
 					stack: "门店",
 					data: data_c
-				}]
+				}],
+				animation: false
 			};
 			myChart1.setOption(option1); 
+			$("#canvas1").panel({title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量对比":curmon+$("#center").combobox("getText")+"门店数量对比"});
+			
 			
 			var myChart2 = echarts.init(document.getElementById("canvas2"));
 			var option2 = {
-				color: ["#D14A61", "#FD9C35", "#61A0A8"],
-				title: {
-					text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率对比":curmon+$("#center").combobox("getText")+"门店完成率对比",
-					x: "100",
-					y: "10"
-				},
+				color:['#233C63','#0086D1','#ef8200','#233C63'],
+				//title: {
+					//text: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率对比":curmon+$("#center").combobox("getText")+"门店完成率对比",
+					//x: "50",
+					//y: "5"
+				//},
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -677,6 +700,10 @@
 						interval: 0
 					},
 					data: label2
+				},{
+					type: "category",
+					data: label3,
+					splitLine: false
 				}],
 				yAxis: [{
 					type: "value",
@@ -702,8 +729,8 @@
 				legend: {
 					show: true,
 					data: ["门店"],
-					x: "700",
-					y: "30"
+					x: "780",
+					y: "10"
 				},
 				series: [{
 					name: "门店",
@@ -716,7 +743,7 @@
 					]],
 						itemStyle: {
 							normal:{
-								color: "rgba(0,0,0,1)",
+								color: "rgba(255,0,0,1)",
 								label: {
 									formatter: "100%"
 								}
@@ -724,11 +751,12 @@
 						}
 						
 					}
-				}]
+				}],
+				animation: false
 			}
 			
 			myChart2.setOption(option2);
-			
+			$("#canvas2").panel({title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率对比":curmon+$("#center").combobox("getText")+"门店完成率对比"});
 		}
 		
 		//datagrid源数据校验，月份是够过大或过小
@@ -758,7 +786,7 @@
 			//to_error();
 			//var mon = $("#mon").datebox("getText");
 			var d = params.param1.split("-");
-			var mon = d[0] + "-" +((parseInt(d[1])<10)?("0"+d[1]):d[1]);
+			var mon = d[0] + "-" +d[1];
 			var org = $("#org").combobox("getText");
 			var center = $("#center").combobox("getText");
 			var tip = 1;//标记是否需要展示集团列
@@ -1102,21 +1130,22 @@
 		<div id = "main" class = "easyui-layout" fit = "true">
 			<div data-options = "region: 'center'" style = "width: 68%">
 				<div class = "easyui-layout" fit = "true">
-					<div data-options = "region: 'north'" style = "height: 10%; border: 0">
+					<div data-options = "region: 'north'" style = "height: 10%;">
+						<div id = "headtxt">查询条件</div>
 						<div id = "toggle">
-						<span>分公司：</span>
-						<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>&nbsp;&nbsp;
-						<span>分拨：</span>
-						<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/>&nbsp;&nbsp;&nbsp;&nbsp;
-						<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "canvasClick()"/>
+							<span>分公司：</span>
+							<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>&nbsp;&nbsp;
+							<span>分拨：</span>
+							<input  class = "easyui-combox" name = "center" id = "center" style = "width: 100px"/>&nbsp;&nbsp;&nbsp;&nbsp;
+							<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "canvasClick()"/>
 						</div>
 						<div id = "radio">
-						<input type = "radio" id = "first_r" name= "pk" value="1" checked = "checked"/>数量统计
-						<input type = "radio" id = "second_r" name= "pk" value = "2"/>完成率对比
+							<input type = "radio" id = "first_r" name= "pk" value="1" checked = "checked"/>数量统计
+							<input type = "radio" id = "second_r" name= "pk" value = "2"/>完成率对比
 						</div>
 					</div>
-					<div id = "canvas1" data-options = "region: 'center'"  style = "height: 45%; border: 0"></div>
-					<div id = "canvas2" data-options = "region: 'south'"  style = "height: 45%;"></div>
+					<div id = "canvas1" data-options = "region: 'center',collapsible: false"  style = "height: 45%;"></div>
+					<div id = "canvas2" data-options = "region: 'south',collapsible: false"  style = "height: 45%;"></div>
 				</div>
 			</div>
 			<div data-options = "region: 'east'" style = "width: 32%">
