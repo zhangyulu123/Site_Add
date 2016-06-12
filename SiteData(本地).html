@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<!-- 2016-6-3 张煜璐 -->
 		<meta http-equiv = "X-UA-Compatible" content = "IE = edge" charset = "UTF-8"/> 
-		<title>SiteAdd</title>
+		<title>SiteData</title>
 		<link rel = "stylesheet" href = "../src/main/webapp/pages/css/wanma.css"/>
 		<link rel = "stylesheet" href = "../src/main/webapp/tools/easyui/themes/default/easyui.css"/>
 		<link rel = "stylesheet" href = "../src/main/webapp/tools/easyui/themes/icon.css"/>
@@ -49,24 +50,18 @@
 			#toggle {
 				display: inline-block;
 				position: relative;
-				left: 30%;
-				top: 15px;
+				left: 1%;
+				top: 5px;
 				
 			}
 			
 			#radio {
 				display: inline-block;
 				position: relative;
-				left: 35%;
-				top: 30px;
+				left: 25%;
+				top: 10px;
 			}
 			
-			#headtxt {
-				font-size: 20px;
-				display: inline-block;
-				position: relative;
-				left: 5%;
-			}
 			
 		</style>
 		<script type = "text/javascript">
@@ -74,11 +69,11 @@
 			var center_to_org = {}, orgid = {}, monthid = {};//下拉框数据引用，同时标记分拨id
 			var params = {"param1": "2016-04-13", "param2": "-1", "param3": "-1"};
 			var curmon = parseInt(params.param1.split("-")[1])+"月";
+			
+			
 			$(function(){
-				
 				var DATA_URL = "http://10.9.45.64:8080/tss/data/json/2212";
 				var method = "POST";
-				
 				tssJS.ajax({
 					url: DATA_URL,
 					params: params,
@@ -94,6 +89,8 @@
 						showGrid(data);
 					}
 				});
+				
+				curmon = parseInt(params.param1.split("-")[1])+"月";
 				
 				if(params.param2 != "-1" &&  params.param3 != "-1"){
 					$("#radio").empty();
@@ -167,53 +164,6 @@
 					
 			}
 		
-				
-		function monsel(){
-			$("#mon").datebox({
-			onShowPanel: function () {
-			span.trigger('click'); 
-			if (!tds) setTimeout(function () {
-				tds = p.find('div.calendar-menu-month-inner td');
-				tds.click(function (e) {
-					e.stopPropagation(); 
-					var year = /\d{4}/.exec(span.html())[0]
-					, month = parseInt($(this).attr('abbr'), 10); 
-					$('#mon').datebox('hidePanel')
-					.datebox('setValue', year+'-'+(month<10?('0'+month):month)); 
-				});
-			}, 0)
-            },
-            parser: function (s) {
-                if (!s) return new Date();
-                var arr = s.split('-');
-                return new Date(parseInt(arr[0], 10), parseInt(arr[1], 10)-1);
-            },
-            formatter: function (d) { 
-				var mon = d.getMonth()+1;
-				return d.getFullYear()+'-'+(mon<10?('0'+mon):mon); 
-				}
-			});
-			
-			var p = $('#mon').datebox('panel'), 
-            tds = false, 
-            span = p.find('span.calendar-text'); 
-			
-			monsel_init()
-		}
-		
-		function to_getime(date){
-			var s = date.split("-");
-			var y = parseInt(s[0]);
-			var m = parseInt(s[1]) -1;
-			return new Date(y, m).getTime();
-		}
-		
-		function monsel_init(){
-			var dt = params.param1.split("-");
-			var y = dt[0];
-			var m = parseInt(dt[1]);
-			$("#mon").datebox("setValue", y+"-"+(m<10?('0'+m):m));
-		}
 		
 		function  combosel(){
 			var orglist = [], centerlist = [];
@@ -494,7 +444,7 @@
 			myChart1.setOption(option1);
 			
 			$("#canvas1").panel({
-				title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店数量统计":curmon+$("#center").combobox("getText")+"门店数量统计"
+				title: ($("#center").combobox("getText")=="全部")?"截止"+curmon+$("#org").combobox("getText")+"门店数量概况":"截止"+curmon+$("#center").combobox("getText")+"门店数量概况"
 			});
 			
 			var myChart2 = echarts.init(document.getElementById("canvas2"));
@@ -579,7 +529,7 @@
 			}
 			
 			myChart2.setOption(option2);
-			$("#canvas2").panel({title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率统计":curmon+$("#center").combobox("getText")+"门店完成率统计"});
+			$("#canvas2").panel({title: ($("#center").combobox("getText")=="全部")?"截止"+curmon+$("#org").combobox("getText")+"门店完成率概况":"截止"+curmon+$("#center").combobox("getText")+"门店完成率概况"});
 			
 		};
 		
@@ -589,12 +539,20 @@
 			var amount = func[0];
 			var rate = func[2];
 			var tip = func[3];
+			
+			if(tip){
+				amount.shift();
+				rate.shift();
+			};
+			
 			var label1 = [], label2 = [], label3 = [], data_s = [], data_c = [], data_r = [];
 			for(var i = 0; i < amount.length; i++){
 				if(tip){
 					label1.push(amount[i]["org"].replace("分公司", ""));
 					if(!label3.contains(amount[i]["belong"])){
 						label3.push(amount[i]["belong"]);
+					}else{
+						label3.push("");
 					}
 				}else{
 					label1.push(amount[i]["center"])
@@ -637,7 +595,10 @@
 				},{
 					type: "category",
 					data: label3,
-					splitLine: false
+					splitLine: false,
+					axisTick:{
+						show: false
+					}
 				}],
 				yAxis: [{
 					type: "value",
@@ -759,27 +720,6 @@
 			$("#canvas2").panel({title: ($("#center").combobox("getText")=="全部")?curmon+$("#org").combobox("getText")+"门店完成率对比":curmon+$("#center").combobox("getText")+"门店完成率对比"});
 		}
 		
-		//datagrid源数据校验，月份是够过大或过小
-		function to_error(){
-			var mon = $("#mon").datebox("getText");
-			var temp = to_getime(mon);
-			var countlist = []
-			for(var key in monthid){
-				countlist.push(to_getime(key))
-			}
-			var mx = Math.max.apply(null, countlist);
-			var mn = Math.min.apply(null, countlist);
-			if(temp<mn){
-				alert("源数据不足");
-				monsel_init();
-				gridData(data)
-			}else if(temp>mx){
-				alert("选择月份不得大于查询月份");
-				monsel_init();
-				gridData(data)
-			}
-			
-		}
 		
 		//datagrid展示数据获取
 		function gridData(data){
@@ -791,38 +731,68 @@
 			var center = $("#center").combobox("getText");
 			var tip = 1;//标记是否需要展示集团列
 			var dataObj = {};
+			var all = {"site":0, "site_a":0, "site_t":0, "cbq":0, "cbq_a":0, "cbq_t":0, "store":0, "store_a":0, "store_t":0}; //全网汇总
 			if(org == "全网"){
 				$.each(data, function(i, item){
 					if(item.imonth == mon){
+						all["site"] += item.site;
+						all["site_a"] += item.site_a;
+						all["site_t"] += item.site_t;
+						all["cbq"] += item.cbq;
+						all["cbq_a"] += item.cbq_a;
+						all["cbq_t"] += item.cbq_t;
+						all["store"] += item.store;
+						all["store_a"] += item.store_a;
+						all["store_t"] += item.store_t;
 						if(!dataObj.hasOwnProperty(item.org_name)){
 							dataObj[item.org_name] = {};
-							dataObj[item.org_name]["site"] = item.site;
-							dataObj[item.org_name]["site_a"] = item.site_a;
-							dataObj[item.org_name]["site_t"] = item.site_t;
-							dataObj[item.org_name]["cbq"] = item.cbq;
-							dataObj[item.org_name]["cbq_a"] = item.cbq_a;
-							dataObj[item.org_name]["cbq_t"] = item.cbq_t;
-							dataObj[item.org_name]["store"] = item.store;
-							dataObj[item.org_name]["store_a"] = item.store_a;
-							dataObj[item.org_name]["store_t"] = item.store_t;
-							dataObj[item.org_name]["belong"] = item.organization;
+							dataObj[item.org_name]["分公司"] = {};
+							dataObj[item.org_name]["分公司"]["site"] = item.site;
+							dataObj[item.org_name]["分公司"]["site_a"] = item.site_a;
+							dataObj[item.org_name]["分公司"]["site_t"] = item.site_t;
+							dataObj[item.org_name]["分公司"]["cbq"] = item.cbq;
+							dataObj[item.org_name]["分公司"]["cbq_a"] = item.cbq_a;
+							dataObj[item.org_name]["分公司"]["cbq_t"] = item.cbq_t;
+							dataObj[item.org_name]["分公司"]["store"] = item.store;
+							dataObj[item.org_name]["分公司"]["store_a"] = item.store_a;
+							dataObj[item.org_name]["分公司"]["store_t"] = item.store_t;
+							dataObj[item.org_name]["分公司"]["belong"] = item.organization;
 						}else{
-							dataObj[item.org_name]["site"] += item.site;
-							dataObj[item.org_name]["site_a"] += item.site_a;
-							dataObj[item.org_name]["site_t"] += item.site_t;
-							dataObj[item.org_name]["cbq"] += item.cbq;
-							dataObj[item.org_name]["cbq_a"] += item.cbq_a;
-							dataObj[item.org_name]["cbq_t"] += item.cbq_t;
-							dataObj[item.org_name]["store"] += item.store;
-							dataObj[item.org_name]["store_a"] += item.store_a;
-							dataObj[item.org_name]["store_t"] += item.store_t;
+							dataObj[item.org_name]["分公司"]["site"] += item.site;
+							dataObj[item.org_name]["分公司"]["site_a"] += item.site_a;
+							dataObj[item.org_name]["分公司"]["site_t"] += item.site_t;
+							dataObj[item.org_name]["分公司"]["cbq"] += item.cbq;
+							dataObj[item.org_name]["分公司"]["cbq_a"] += item.cbq_a;
+							dataObj[item.org_name]["分公司"]["cbq_t"] += item.cbq_t;
+							dataObj[item.org_name]["分公司"]["store"] += item.store;
+							dataObj[item.org_name]["分公司"]["store_a"] += item.store_a;
+							dataObj[item.org_name]["分公司"]["store_t"] += item.store_t;
 						}
+							dataObj[item.org_name][item.center] = {};
+							dataObj[item.org_name][item.center]["site"] = item.site;
+							dataObj[item.org_name][item.center]["site_a"] = item.site_a;
+							dataObj[item.org_name][item.center]["site_t"] = item.site_t;
+							dataObj[item.org_name][item.center]["cbq"] = item.cbq;
+							dataObj[item.org_name][item.center]["cbq_a"] = item.cbq_a;
+							dataObj[item.org_name][item.center]["cbq_t"] = item.cbq_t;
+							dataObj[item.org_name][item.center]["store"] = item.store;
+							dataObj[item.org_name][item.center]["store_a"] = item.store_a;
+							dataObj[item.org_name][item.center]["store_t"] = item.store_t;
 					}
 				});
 			}else if(org != "全网" && center == "全部"){
 				tip = 0;
 				$.each(data, function(i, item){
 					if(item.imonth == mon && item.org_name == org){
+						all["site"] += item.site;
+						all["site_a"] += item.site_a;
+						all["site_t"] += item.site_t;
+						all["cbq"] += item.cbq;
+						all["cbq_a"] += item.cbq_a;
+						all["cbq_t"] += item.cbq_t;
+						all["store"] += item.store;
+						all["store_a"] += item.store_a;
+						all["store_t"] += item.store_t;
 						dataObj[item.center] = {};
 						dataObj[item.center]["site"] = item.site;
 						dataObj[item.center]["cbq"] = item.cbq;
@@ -855,28 +825,95 @@
 			}
 			
 			var amount = [], add = [], rate = [];
+			
 			for(var key in dataObj){
-				var r1 = rate_cal(dataObj[key]["site_a"], dataObj[key]["site_t"]);
-				var r2 = rate_cal(dataObj[key]["cbq_a"], dataObj[key]["cbq_t"]);
-				var r3 = rate_cal(dataObj[key]["store_a"], dataObj[key]["store_t"])
-				if(dataObj[key].hasOwnProperty("belong")){
-					amount.push({"belong": dataObj[key]["belong"], "org": key, "site": dataObj[key]["site"], "cbq": dataObj[key]["cbq"], "store": dataObj[key]["store"]});
-					add.push({"belong": dataObj[key]["belong"], "org": key, "site": dataObj[key]["site_a"], "cbq": dataObj[key]["cbq_a"], "store": dataObj[key]["store_a"]});
-					rate.push({"belong": dataObj[key]["belong"], "org": key, "site": r1, "cbq": r2, "store": r3});
+				if(tip){
+					var k = dataObj[key]["分公司"];
+					var r1 = rate_cal(k["site_a"], k["site_t"]);
+					var r2 = rate_cal(k["cbq_a"], k["cbq_t"]);
+					var r3 = rate_cal(k["store_a"], k["store_t"])
+					amount.push({"belong": k["belong"], "org": key, "site": k["site"], "cbq": k["cbq"], "store": k["store"]});
+					add.push({"belong": k["belong"], "org": key, "site": k["site_a"], "cbq": k["cbq_a"], "store": k["store_a"]});
+					rate.push({"belong": k["belong"], "org": key, "site": r1, "cbq": r2, "store": r3});
 					
 				}else{
+					var r1 = rate_cal(dataObj[key]["site_a"], dataObj[key]["site_t"]);
+					var r2 = rate_cal(dataObj[key]["cbq_a"], dataObj[key]["cbq_t"]);
+					var r3 = rate_cal(dataObj[key]["store_a"], dataObj[key]["store_t"])
 					amount.push({"center": key, "site": dataObj[key]["site"], "cbq": dataObj[key]["cbq"], "store": dataObj[key]["store"]});
 					add.push({"center": key, "site": dataObj[key]["site_a"], "cbq": dataObj[key]["cbq_a"], "store": dataObj[key]["store_a"]});
-					rate.push({"center": key, "site": r1, "cbq": r2, "store": r3});
-					
+					rate.push({"center": key, "site": r1, "cbq": r2, "store": r3});	
 				}	
 			}
+			
 			amount = gridSort(amount, "store", tip);
 			add = gridSort(add, "store", tip);
 			rate = gridSort(rate, "store", tip);
-			var amount_str = gridDown(amount, tip);
-			var add_str = gridDown(add, tip);
-			var rate_str = gridDown(rate, tip);
+			
+			var s_r = rate_cal(all["site_a"], all["site_t"]);
+			var c_r = rate_cal(all["cbq_a"], all["cbq_t"]);
+			var t_r = rate_cal(all["store_a"],all["store_t"]);
+			if(tip){
+				amount.unshift({"belong": "全网", "org": "", "site": all["site"], "cbq": all["cbq"], "store": all["store"]});
+				add.unshift({"belong": "全网", "org": "", "site": all["site_a"], "cbq": all["cbq_a"], "store": all["store_a"]});
+				rate.unshift({"belong": "全网", "org": "", "site": (s_r == undefined)?0.01:s_r, "cbq": (c_r == undefined)?0.01:c_r, "store":(t_r == undefined)?0.01:t_r });
+			}else if(tip == 0 && center == "全部"){
+				amount.unshift({"center":org, "site": all["site"], "cbq": all["cbq"], "store": all["store"]});
+				add.unshift({"center": org, "site": all["site_a"], "cbq": all["cbq_a"], "store": all["store_a"]});
+				rate.unshift({"center": org, "site": (s_r == undefined)?0.01:s_r, "cbq": (c_r == undefined)?0.01:c_r, "store":(t_r == undefined)?0.01:t_r });
+			}
+			
+			//按分公司展示时仅有分公司，导出内容中包括分拨明细
+			var amount_str, add_str, rate_str;
+			if(tip){
+				var amount_s = [], add_s = [], rate_s = [];
+				amount_s.push(amount[0]);
+				add_s.push(add[0]);
+				rate_s.push(rate[0]);
+				for(var key in dataObj){
+					for(var i = 1; i< amount.length; i ++){
+						if(amount[i]["org"] == key){
+							amount_s.push(amount[i]);
+							for(var key1 in dataObj[key]){
+								if(key1 != "分公司"){
+								amount_s.push({"belong": '', "org": key1, "site": dataObj[key][key1]["site"], "cbq": dataObj[key][key1]["cbq"], "store": dataObj[key][key1]["store"]})
+								}
+							}
+						}		
+					};
+					for(var i = 1; i< add.length; i ++){
+						if(add[i]["org"] == key){
+							add_s.push(add[i])
+							for(var key1 in dataObj[key]){
+							if(key1 != "分公司"){
+								add_s.push({"belong": '', "org": key1, "site": dataObj[key][key1]["site_a"], "cbq": dataObj[key][key1]["cbq_a"], "store": dataObj[key][key1]["store_a"]})
+								}
+							}
+						}		
+					};
+					for(var i = 1; i< rate.length; i ++){
+						if(rate[i]["org"] == key){
+							rate_s.push(rate[i])
+							for(var key1 in dataObj[key]){
+							if(key1 != "分公司"){
+								var r1 = rate_cal(dataObj[key][key1]["site_a"], dataObj[key][key1]["site_t"]);
+								var r2 = rate_cal(dataObj[key][key1]["cbq_a"], dataObj[key][key1]["cbq_t"]);
+								var r3 = rate_cal(dataObj[key][key1]["store_a"], dataObj[key][key1]["store_t"]);
+								rate_s.push({"belong": '', "org": key1, "site": r1, "cbq": r2, "store": r3});
+								}
+							}
+						}		
+					}
+					
+				}
+			amount_str = gridDown(amount_s, tip);
+			add_str = gridDown(add_s, tip);
+			rate_str = gridDown(rate_s, tip);
+			}else{
+				amount_str = gridDown(amount, tip);
+				add_str = gridDown(add, tip);
+				rate_str = gridDown(rate, tip);
+			}
 			
 			return [amount, add, rate, tip, amount_str, add_str, rate_str];
 		}
@@ -1119,7 +1156,7 @@
 			if(org != "全网" &&  center != "全部"){
 					$("#radio").empty();
 			}else{
-				$$("radio").innerHTML = "<input type = 'radio' id = 'first_r' name= 'pk' value='1' checked = 'checked'/>数量统计<input type = 'radio' id = 'second_r' name= 'pk' value = '2'/>完成率对比"
+				$$("radio").innerHTML = "<input type = 'radio' id = 'first_r' name= 'pk' value='1' checked = 'checked'/>年度网络发展概况<input type = 'radio' id = 'second_r' name= 'pk' value = '2'/>网络拓展进度对比"
 			};
 			toggle();
 		}
@@ -1130,8 +1167,7 @@
 		<div id = "main" class = "easyui-layout" fit = "true">
 			<div data-options = "region: 'center'" style = "width: 68%">
 				<div class = "easyui-layout" fit = "true">
-					<div data-options = "region: 'north'" style = "height: 10%;">
-						<div id = "headtxt">查询条件</div>
+					<div data-options = "region: 'north'" style = "height: 6%;">
 						<div id = "toggle">
 							<span>分公司：</span>
 							<input  class = "easyui-combox" name = "org" id = "org" style = "width: 100px"/>&nbsp;&nbsp;
@@ -1140,15 +1176,15 @@
 							<input 	class = "easyui-linkbutton" id = "sbt" style = "width: 50px; height: 25px" value = "确定" onclick = "canvasClick()"/>
 						</div>
 						<div id = "radio">
-							<input type = "radio" id = "first_r" name= "pk" value="1" checked = "checked"/>数量统计
-							<input type = "radio" id = "second_r" name= "pk" value = "2"/>完成率对比
+							<input type = "radio" id = "first_r" name= "pk" value="1" checked = "checked"/>年度网络发展概况
+							<input type = "radio" id = "second_r" name= "pk" value = "2"/>网络拓展进度对比
 						</div>
 					</div>
-					<div id = "canvas1" data-options = "region: 'center',collapsible: false"  style = "height: 45%;"></div>
-					<div id = "canvas2" data-options = "region: 'south',collapsible: false"  style = "height: 45%;"></div>
+					<div id = "canvas1" data-options = "region: 'center',collapsible: false"  style = "height: 47%;"></div>
+					<div id = "canvas2" data-options = "region: 'south',collapsible: false"  style = "height: 47%;"></div>
 				</div>
 			</div>
-			<div data-options = "region: 'east'" style = "width: 32%">
+			<div data-options = "region: 'west'" style = "width: 32%">
 				<!--<div>
 					<span>查询条件:</span>
 					<input class = "easyui-datebox" id = "mon" name = "mon" style = "width: 100px"/>&nbsp;&nbsp;
