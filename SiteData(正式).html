@@ -544,11 +544,8 @@
 			var amount = func[0];
 			var rate = func[2];
 			var tip = func[3];
-			
-			if(tip){
-				amount.shift();
-				rate.shift();
-			};
+			amount.shift();
+			rate.shift();
 			
 			var label1 = [], label2 = [], label3 = [], data_s = [], data_c = [], data_r = [];
 			for(var i = 0; i < amount.length; i++){
@@ -594,13 +591,29 @@
 					},
 					axisLabel: {
 						show: true, 
-						interval: 0
+						interval: 0,
+						formatter:function(val){
+							var str = "";
+							for(var i = 0; i < val.length; i++){
+								if((i+1)%2 == 0){
+									str += val.substring(i-1, i+1)+"\n"
+								}
+							}
+							return str;
+						}
 					},
 					data: label1	
 				},{
 					type: "category",
 					data: label3,
-					splitLine: false
+					axisLabel: {
+						show: true, 
+						interval: 0
+					},
+					splitLine: false,
+					axisTick:{
+						show: false
+					}
 				}],
 				yAxis: [{
 					type: "value",
@@ -623,16 +636,18 @@
 					show: true,
 					data: ["网点", "承包区"],
 					x: "780",
-					y: "10"
+					y: "20"
 				},
 				series: [{
 					name: "网点",
 					type: "bar",
+					barMaxWidth: 30,
 					stack: "门店",
 					data: data_s
 				},{
 					name: "承包区",
 					type: "bar",
+					barMaxWidth: 30,
 					stack: "门店",
 					data: data_c
 				}],
@@ -659,14 +674,30 @@
 						}
 					},
 					axisLabel: {
-						show: true, 
-						interval: 0
+						show: true,
+						interval: 0,
+						formatter:function(val){
+							var str = [];
+							for(var i = 0; i < val.length; i++){
+								if((i+1)%2 == 0){
+									str.push(val.substring(i-1, i+1));
+								}
+							}
+							return str.split(",").join("\n");
+						}
 					},
 					data: label2
 				},{
 					type: "category",
 					data: label3,
-					splitLine: false
+					axisLabel: {
+						show: true, 
+						interval: 0
+					},
+					splitLine: false,
+					axisTick:{
+						show: false
+					}
 				}],
 				yAxis: [{
 					type: "value",
@@ -693,11 +724,12 @@
 					show: true,
 					data: ["门店"],
 					x: "780",
-					y: "10"
+					y: "20"
 				},
 				series: [{
 					name: "门店",
 					type: "bar",
+					barMaxWidth: 30,
 					data: data_r,
 					markLine: {
 						data: [[

@@ -67,7 +67,7 @@
 		<script type = "text/javascript">
 			var data;
 			var center_to_org = {}, orgid = {}, monthid = {};//下拉框数据引用，同时标记分拨id
-			var params = {"param1": "2016-04-13", "param2": "-1", "param3": "-1"};
+			var params = {"param1": "2016-04-30", "param2": "-1", "param3": "-1"};
 			var curmon = parseInt(params.param1.split("-")[1])+"月";
 			
 			
@@ -389,6 +389,9 @@
 			var myChart1 = echarts.init(document.getElementById("canvas1"));
 			var option1 = {
 				color:['#233C63','#0086D1','#ef8200','#233C63'],
+				grid: {
+					y2: 80
+				},
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -457,6 +460,9 @@
 					//x: "100",
 					//y: "10"
 				//},
+				grid: {
+					y2: 80
+				},
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -539,11 +545,8 @@
 			var amount = func[0];
 			var rate = func[2];
 			var tip = func[3];
-			
-			if(tip){
-				amount.shift();
-				rate.shift();
-			};
+			amount.shift();	
+			rate.shift();
 			
 			var label1 = [], label2 = [], label3 = [], data_s = [], data_c = [], data_r = [];
 			for(var i = 0; i < amount.length; i++){
@@ -578,6 +581,9 @@
 					//x: "50",
 					//y: "5"
 				//},
+				grid: {
+					y2: 80
+				},
 				xAxis: [{
 					position: "bottom",
 					type: "category",
@@ -589,13 +595,33 @@
 					},
 					axisLabel: {
 						show: true, 
-						interval: 0
+						interval: 0,
+						formatter:function(val){
+							var str = "";
+							for(var i = 0; i < val.length; i++){
+								if((i+1)%2 == 0){
+									str += val.substring(i-1, i+1)+"\n"
+								}
+							}
+							if(val.length%2 != 0){
+								str += val.substr(-1, 1);
+							}
+							return str;
+						}
 					},
-					data: label1	
+					data: label1
 				},{
 					type: "category",
 					data: label3,
-					splitLine: false,
+					axisLabel: {
+						show: true, 
+						interval: 0
+					},
+					splitLine: {
+						interval: function(index, value){
+							return (value.length > 0)?1:0;
+						}
+					},
 					axisTick:{
 						show: false
 					}
@@ -621,16 +647,18 @@
 					show: true,
 					data: ["网点", "承包区"],
 					x: "780",
-					y: "10"
+					y: "20"
 				},
 				series: [{
 					name: "网点",
 					type: "bar",
+					barMaxWidth: 30,
 					stack: "门店",
 					data: data_s
 				},{
 					name: "承包区",
 					type: "bar",
+					barMaxWidth: 30,
 					stack: "门店",
 					data: data_c
 				}],
@@ -648,6 +676,9 @@
 					//x: "50",
 					//y: "5"
 				//},
+				grid: {
+					y2: 80
+				},
 				xAxis: [{
 					type: "category",
 					axisLine: {
@@ -657,14 +688,33 @@
 						}
 					},
 					axisLabel: {
-						show: true, 
-						interval: 0
+						show: true,
+						interval: 0,
+						formatter:function(val){
+							var str = "";
+							for(var i = 0; i < val.length; i++){
+								if((i+1)%2 == 0){
+									str += val.substring(i-1, i+1)+"\n"
+								}
+							}
+							if(val.length%2 != 0){
+								str += val.substr(-1, 1);
+							}
+							return str;
+						}
 					},
 					data: label2
 				},{
 					type: "category",
 					data: label3,
-					splitLine: false
+					axisLabel: {
+						show: true, 
+						interval: 0
+					},
+					splitLine: false,
+					axisTick:{
+						show: false
+					}
 				}],
 				yAxis: [{
 					type: "value",
@@ -691,11 +741,12 @@
 					show: true,
 					data: ["门店"],
 					x: "780",
-					y: "10"
+					y: "20"
 				},
 				series: [{
 					name: "门店",
 					type: "bar",
+					barMaxWidth: 30,
 					data: data_r,
 					markLine: {
 						data: [[
@@ -768,16 +819,16 @@
 							dataObj[item.org_name]["分公司"]["store_a"] += item.store_a;
 							dataObj[item.org_name]["分公司"]["store_t"] += item.store_t;
 						}
-							dataObj[item.org_name][item.center] = {};
-							dataObj[item.org_name][item.center]["site"] = item.site;
-							dataObj[item.org_name][item.center]["site_a"] = item.site_a;
-							dataObj[item.org_name][item.center]["site_t"] = item.site_t;
-							dataObj[item.org_name][item.center]["cbq"] = item.cbq;
-							dataObj[item.org_name][item.center]["cbq_a"] = item.cbq_a;
-							dataObj[item.org_name][item.center]["cbq_t"] = item.cbq_t;
-							dataObj[item.org_name][item.center]["store"] = item.store;
-							dataObj[item.org_name][item.center]["store_a"] = item.store_a;
-							dataObj[item.org_name][item.center]["store_t"] = item.store_t;
+						dataObj[item.org_name][item.center] = {};
+						dataObj[item.org_name][item.center]["site"] = item.site;
+						dataObj[item.org_name][item.center]["site_a"] = item.site_a;
+						dataObj[item.org_name][item.center]["site_t"] = item.site_t;
+						dataObj[item.org_name][item.center]["cbq"] = item.cbq;
+						dataObj[item.org_name][item.center]["cbq_a"] = item.cbq_a;
+						dataObj[item.org_name][item.center]["cbq_t"] = item.cbq_t;
+						dataObj[item.org_name][item.center]["store"] = item.store;
+						dataObj[item.org_name][item.center]["store_a"] = item.store_a;
+						dataObj[item.org_name][item.center]["store_t"] = item.store_t;
 					}
 				});
 			}else if(org != "全网" && center == "全部"){
